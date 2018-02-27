@@ -1,0 +1,14 @@
+allprojects {
+    repositories {
+        jcenter()
+        // Set up a repository which looks for dependencies in the "libs" folder
+        flatDir{dirs 'java/libs'}
+    }
+}
+
+
+
+
+
+
+

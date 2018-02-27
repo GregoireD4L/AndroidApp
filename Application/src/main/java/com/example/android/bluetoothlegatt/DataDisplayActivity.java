@@ -1,0 +1,983 @@
+package com.example.android.bluetoothlegatt;
+
+import android.app.Activity;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.Environment;
+import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.text.style.TtsSpan;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.Series;
+import com.scichart.charting.model.dataSeries.XDataSeries;
+import com.scichart.charting.model.dataSeries.XyDataSeries;
+import com.scichart.charting.modifiers.ModifierGroup;
+import com.scichart.charting.visuals.SciChartSurface;
+import com.scichart.charting.visuals.axes.IAxis;
+import com.scichart.charting.visuals.renderableSeries.IRenderableSeries;
+import com.scichart.drawing.utility.ColorUtil;
+import com.scichart.extensions.builders.SciChartBuilder;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.List;
+import java.util.UUID;
+import java.lang.Math;
+
+import uk.me.berndporr.iirj.Butterworth;
+
+public class DataDisplayActivity extends Activity {
+    private final static String TAG = DataDisplayActivity.class.getSimpleName();
+
+    // Propriétés du service connecté
+    private String mDeviceName;
+    private String mDeviceAddress;
+    private String mCharUuid;
+    private String mServiceUuid;
+    // Selection des données à voir
+    private int mServiceSelected;
+    private int mChannelSelected;
+
+    // Selection des paramètres
+    private boolean isFilteringOn;
+    private boolean isDataSave;
+
+    // Lancement de l'enregistrement
+    private boolean isRecording;
+
+    // Objets de visualisation
+    private int mCompteur;
+    private SciChartSurface surface;
+
+    private XyDataSeries ecgData;
+    private XyDataSeries inertialDataX;
+    private XyDataSeries inertialDataY;
+    private XyDataSeries inertialDataZ;
+    private XyDataSeries respirationDataThorax;
+    private XyDataSeries respirationDataAbdo;
+    private XyDataSeries tempData;
+    private XyDataSeries spo2Data;
+
+    private IRenderableSeries ecgDataSeries;
+    private IRenderableSeries inertialDataXSeries;
+    private IRenderableSeries inertialDataYSeries;
+    private IRenderableSeries inertialDataZSeries;
+    private IRenderableSeries respirationDataThoraxSeries;
+    private IRenderableSeries respirationDataAbdoSeries;
+    private IRenderableSeries tempDataSeries;
+    private IRenderableSeries spo2DataSeries;
+
+    // Objet de sauvegarde des données
+    private FileOutputStream outputStream;
+
+    // Objets view
+    private RadioGroup mServiceSelection;
+    private Button mRecord;
+    private Button mClearGraph;
+    private RadioGroup mChannelSelection;
+    private RadioButton mChannel1;
+    private RadioButton mChannel2;
+    private RadioButton mChannel3;
+    private TextView mBTStatus;
+    private TextView mCharText;
+    private CheckBox mSaveData;
+    private CheckBox mFilterOn;
+    private LinearLayout newGraph;
+
+    // Objets BlueTooth
+    private BluetoothLeService mBTLeService;
+    private BluetoothGattCharacteristic mNotifyCharacteristic;
+    private boolean mConnected = false;
+
+    // Filtres
+    private Butterworth mBtwFilterLow;
+    private Butterworth mBtwFilterHigh;
+
+    // Clé de l'intent
+    private static final String EXTRAS_DEVICE_NAME = "NAME";
+    private static final String EXTRAS_DEVICE_ADDRESS = "ADDRESS";
+    private static final String EXTRAS_CHAR_UUID = "CHAR_UUID";
+    private static final String EXTRAS_SERVICE_UUID = "SERVICE_UUID";
+
+    private boolean wrongFrame = false;
+
+    //////////////////// Fin de la déclaration des variables globales //////////////////////////////
+
+    ////////////////////////////// Instanciation des objets BT /////////////////////////////////////
+
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBTLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBTLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+            mBTLeService.connect(mDeviceAddress);
+            if(mBTLeService == null){
+                Log.e(TAG, "nul" + mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid)).getUuid().toString());
+            } else {
+                Log.e(TAG, "bien" + mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid)).getUuid().toString());
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBTLeService = null;
+        }
+    };
+
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
+                updateConnectionState(R.string.connected);
+                invalidateOptionsMenu();
+                Log.e(TAG, "bien co");
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
+                updateConnectionState(R.string.disconnected);
+                invalidateOptionsMenu();
+                clearUI();
+                Log.e(TAG, "Déco");
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                //displayGattServices(mBTLeService.getSupportedGattServices());
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                if (mServiceSelected == 1){
+                    displayDataECG(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                } else if (mServiceSelected == 2){
+                    displayDataAccelero(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                } else if (mServiceSelected == 3){
+                    displayRespiration(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                 }else if (mServiceSelected == 4){
+                    displayTemp(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                } else {
+                    displaySpO2(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }
+            }
+        }
+    };
+
+    /////////////////////////// Fin de l'instanciation des objets BT ///////////////////////////////
+
+    ////////////////////////////////// Déclaration des Méthodes ////////////////////////////////////
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.data_display);
+
+        // Déclaration de la view graphe
+
+        surface = new SciChartSurface(this);
+        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph.addView(surface);
+        SciChartBuilder.init(this);
+        final SciChartBuilder builder = SciChartBuilder.instance();
+
+        // Déclaration des conteneurs de données
+
+        ecgData = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(3500).build();
+        ecgDataSeries = builder.newLineSeries()
+                .withDataSeries(ecgData)
+                .withStrokeStyle(ColorUtil.LimeGreen, 2f, true)
+                .build();
+
+        inertialDataX  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataXSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataX)
+                .withStrokeStyle(ColorUtil.LimeGreen, 2f, true)
+                .build();
+
+        inertialDataY  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataYSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataY)
+                .withStrokeStyle(ColorUtil.LightBlue, 2f, true)
+                .build();
+
+        inertialDataZ  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataZSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataZ)
+                .withStrokeStyle(ColorUtil.Red, 2f, true)
+                .build();
+
+        respirationDataThorax = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        respirationDataThoraxSeries = builder.newLineSeries()
+                .withDataSeries(respirationDataThorax)
+                .withStrokeStyle(ColorUtil.LightBlue, 2f, true)
+                .build();
+
+        respirationDataAbdo = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        respirationDataAbdoSeries = builder.newLineSeries()
+                .withDataSeries(respirationDataAbdo)
+                .withStrokeStyle(ColorUtil.LimeGreen, 2f, true)
+                .build();
+
+        tempData = builder.newXyDataSeries(Integer.class,Double.class).withFifoCapacity(350).build();
+        tempDataSeries = builder.newLineSeries()
+                .withDataSeries(tempData)
+                .withStrokeStyle(ColorUtil.Red,2f,true)
+                .build();
+
+        spo2Data = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(700).build();
+        spo2DataSeries = builder.newLineSeries()
+                .withDataSeries(spo2Data)
+                .withStrokeStyle(ColorUtil.Red, 2f, true)
+                .build();
+
+
+        ModifierGroup modifier = builder.newModifierGroup()
+                .withPinchZoomModifier().build()
+                .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .build();
+
+        surface.getChartModifiers().add(modifier);
+
+        // Application par défaut de la visualisation ECG
+
+        surface.getRenderableSeries().add(ecgDataSeries);
+
+        // Application par défaut des axes
+
+        final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
+        final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
+
+        Collections.addAll(surface.getYAxes(), yAxis);
+        Collections.addAll(surface.getXAxes(), xAxis);
+
+        // Récupération des données de connexion BT dans l'intent
+
+        final Intent intent = getIntent();
+        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        mCharUuid = intent.getStringExtra(EXTRAS_CHAR_UUID);
+        mServiceUuid = intent.getStringExtra(EXTRAS_SERVICE_UUID);
+
+        // Initialisation des objets view
+
+        mBTStatus = (TextView) findViewById(R.id.bt_status);
+        mCharText = (TextView) findViewById(R.id.char_value);
+        mServiceSelection = (RadioGroup) findViewById(R.id.service_selection);
+        mRecord = (Button) findViewById(R.id.record_button);
+        mClearGraph = (Button) findViewById(R.id.clear_graph);
+        mChannelSelection = (RadioGroup) findViewById(R.id.channel_selection);
+        mChannel1 = (RadioButton) findViewById(R.id.channel1);
+        mChannel2 = (RadioButton) findViewById(R.id.channel2);
+        mChannel3 = (RadioButton) findViewById(R.id.channel3);
+        mSaveData = (CheckBox) findViewById(R.id.saveData);
+        mFilterOn = (CheckBox) findViewById(R.id.filterOn);
+
+        // Initialisation des filtres ECG
+
+        mBtwFilterLow = new Butterworth();
+        mBtwFilterLow.lowPass(4,500,40);
+        mBtwFilterHigh = new Butterworth();
+        mBtwFilterHigh.highPass(2,500, 0.05);
+
+        // Initialisation des objets pour écriture dans le stockage externe
+
+        File root = Environment.getExternalStorageDirectory();
+        File file = null;
+
+        if (root.canWrite()) {
+            File dir = new File(root.getAbsolutePath() + "/Log_ECG_app");
+            dir.mkdirs();
+            file = new File(dir,Calendar.getInstance().getTime().toString().replace(":", "") + ".csv");
+            try {
+                outputStream = new FileOutputStream(file);
+                Log.e(TAG,root.getAbsolutePath());
+            } catch (IOException e) {
+                Log.e(TAG,"Fail to open file");
+            }
+
+            Log.e(TAG,root.getAbsolutePath());
+        } else {
+            Log.e(TAG,"root is not writable");
+
+        }
+
+        // Initialisation du compteur et des données par défaut
+
+        mCompteur = 0;
+        mServiceSelected = 1;
+        mChannelSelected = 1;
+        isFilteringOn = false;
+        isRecording = false;
+        isDataSave = false;
+
+        // Instanciation des listener
+
+        mServiceSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i == R.id.ecg){
+                    if(mServiceSelected == 2){
+                        clearGraph();
+                        mServiceSelected = 1;
+                        mChannel1.setText("Channel 1");
+                        mChannel2.setText("Channel 2");
+                        mChannel3.setText("Channel 3");
+
+                        surface.getRenderableSeries().remove(inertialDataXSeries);
+                        surface.getRenderableSeries().remove(inertialDataYSeries);
+                        surface.getRenderableSeries().remove(inertialDataZSeries);
+
+                        surface.getRenderableSeries().add(ecgDataSeries);
+                    } else if(mServiceSelected == 3){
+                        clearGraph();
+                        mServiceSelected = 1;
+                        mChannel1.setText("Channel 1");
+                        mChannel2.setText("Channel 2");
+                        mChannel3.setText("Channel 3");
+
+                        surface.getRenderableSeries().remove(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().remove(respirationDataAbdoSeries);
+
+                        surface.getRenderableSeries().add(ecgDataSeries);
+                    } else if(mServiceSelected == 4){
+                        clearGraph();
+                        mServiceSelected = 1;
+                        mChannel1.setText("Channel 1");
+                        mChannel2.setText("Channel 2");
+                        mChannel3.setText("Channel 3");
+
+                        surface.getRenderableSeries().remove(tempDataSeries);
+
+                        surface.getRenderableSeries().add(ecgDataSeries);
+                    }else if(mServiceSelected == 5){
+                        clearGraph();
+                        mServiceSelected = 1;
+                        mChannel1.setText("Channel 1");
+                        mChannel2.setText("Channel 2");
+                        mChannel3.setText("Channel 3");
+
+                        surface.getRenderableSeries().remove(spo2DataSeries);
+
+                        surface.getRenderableSeries().add(ecgDataSeries);
+                    }
+                }else if(i == R.id.inertial){
+                    if(mServiceSelected == 1){
+                        clearGraph();
+                        mServiceSelected = 2;
+                        mChannel1.setText("Accéléro");
+                        mChannel2.setText("Gyroscope");
+                        mChannel3.setText("Magnéto");
+
+                        surface.getRenderableSeries().remove(ecgDataSeries);
+
+                        surface.getRenderableSeries().add(inertialDataXSeries);
+                        surface.getRenderableSeries().add(inertialDataYSeries);
+                        surface.getRenderableSeries().add(inertialDataZSeries);
+                    } else if(mServiceSelected == 3){
+                        clearGraph();
+                        mServiceSelected = 2;
+                        mChannel1.setText("Accéléro");
+                        mChannel2.setText("Gyroscope");
+                        mChannel3.setText("Magnéto");
+
+                        surface.getRenderableSeries().remove(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().remove(respirationDataAbdoSeries);
+
+                        surface.getRenderableSeries().add(inertialDataXSeries);
+                        surface.getRenderableSeries().add(inertialDataYSeries);
+                        surface.getRenderableSeries().add(inertialDataZSeries);
+
+                    } else if(mServiceSelected == 4){
+                        clearGraph();
+                        mServiceSelected = 2;
+                        mChannel1.setText("Accéléro");
+                        mChannel2.setText("Gyroscope");
+                        mChannel3.setText("Magnéto");
+
+                        surface.getRenderableSeries().remove(tempDataSeries);
+
+                        surface.getRenderableSeries().add(inertialDataXSeries);
+                        surface.getRenderableSeries().add(inertialDataYSeries);
+                        surface.getRenderableSeries().add(inertialDataZSeries);
+                    }else if(mServiceSelected == 5) {
+                        clearGraph();
+                        mServiceSelected = 2;
+                        mChannel1.setText("Accéléro");
+                        mChannel2.setText("Gyroscope");
+                        mChannel3.setText("Magnéto");
+
+                        surface.getRenderableSeries().remove(spo2DataSeries);
+
+                        surface.getRenderableSeries().add(inertialDataXSeries);
+                        surface.getRenderableSeries().add(inertialDataYSeries);
+                        surface.getRenderableSeries().add(inertialDataZSeries);
+                    }
+                } else if(i == R.id.respiration){
+                    if(mServiceSelected == 1){
+                        clearGraph();
+                        mServiceSelected = 3;
+                        mChannel1.setText("No choice");
+                        mChannel2.setText("No choice");
+                        mChannel3.setText("No choice");
+
+                        surface.getRenderableSeries().remove(ecgDataSeries);
+
+                        surface.getRenderableSeries().add(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+                    } else if(mServiceSelected == 2){
+                        clearGraph();
+                        mServiceSelected = 3;
+                        mChannel1.setText("No choice");
+                        mChannel2.setText("No choice");
+                        mChannel3.setText("No choice");
+
+                        surface.getRenderableSeries().remove(inertialDataXSeries);
+                        surface.getRenderableSeries().remove(inertialDataYSeries);
+                        surface.getRenderableSeries().remove(inertialDataZSeries);
+
+                        surface.getRenderableSeries().add(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+                    } else if(mServiceSelected == 4){
+                        clearGraph();
+                        mServiceSelected = 3;
+                        mChannel1.setText("No choice");
+                        mChannel2.setText("No choice");
+                        mChannel3.setText("No choice");
+
+                        surface.getRenderableSeries().remove(tempDataSeries);
+
+                        surface.getRenderableSeries().add(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+                    }else if(mServiceSelected == 5){
+                        clearGraph();
+                        mServiceSelected = 3;
+                        mChannel1.setText("No choice");
+                        mChannel2.setText("No choice");
+                        mChannel3.setText("No choice");
+
+                        surface.getRenderableSeries().remove(spo2DataSeries);
+
+                        surface.getRenderableSeries().add(respirationDataThoraxSeries);
+                        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+                    }
+                }else if(i == R.id.temperature){
+                        if(mServiceSelected == 1){
+                            clearGraph();
+                            mServiceSelected = 4;
+                            mChannel1.setText("No choice");
+                            mChannel2.setText("No choice");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(ecgDataSeries);
+
+                            surface.getRenderableSeries().add(tempDataSeries);
+                        } else if(mServiceSelected == 2){
+                            clearGraph();
+                            mServiceSelected = 4;
+                            mChannel1.setText("No choice");
+                            mChannel2.setText("No choice");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(inertialDataXSeries);
+                            surface.getRenderableSeries().remove(inertialDataYSeries);
+                            surface.getRenderableSeries().remove(inertialDataZSeries);
+
+                            surface.getRenderableSeries().add(tempDataSeries);
+                        } else if(mServiceSelected == 3){
+                            clearGraph();
+                            mServiceSelected = 4;
+                            mChannel1.setText("No choice");
+                            mChannel2.setText("No choice");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(respirationDataThoraxSeries);
+                            surface.getRenderableSeries().remove(respirationDataAbdoSeries);
+
+                            surface.getRenderableSeries().add(tempDataSeries);
+                        }else if(mServiceSelected == 5){
+                            clearGraph();
+                            mServiceSelected = 4;
+                            mChannel1.setText("No choice");
+                            mChannel2.setText("No choice");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(spo2DataSeries);
+
+                            surface.getRenderableSeries().add(tempDataSeries);
+                        }
+                    } else {
+                        if(mServiceSelected == 1){
+                            clearGraph();
+                            mServiceSelected = 5;
+                            mChannel1.setText("Red");
+                            mChannel2.setText("IR");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(ecgDataSeries);
+
+                            surface.getRenderableSeries().add(spo2DataSeries);
+
+                        } else if(mServiceSelected == 2){
+                            clearGraph();
+                            mServiceSelected = 5;
+                            mChannel1.setText("Red");
+                            mChannel2.setText("IR");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(inertialDataXSeries);
+                            surface.getRenderableSeries().remove(inertialDataYSeries);
+                            surface.getRenderableSeries().remove(inertialDataZSeries);
+
+                            surface.getRenderableSeries().add(spo2DataSeries);
+                        } else if(mServiceSelected == 3){
+                            clearGraph();
+                            mServiceSelected = 5;
+                            mChannel1.setText("Red");
+                            mChannel2.setText("IR");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(respirationDataThoraxSeries);
+                            surface.getRenderableSeries().remove(respirationDataAbdoSeries);
+
+                            surface.getRenderableSeries().add(spo2DataSeries);
+                        } else if(mServiceSelected == 4){
+                            clearGraph();
+                            mServiceSelected = 5;
+                            mChannel1.setText("Red");
+                            mChannel2.setText("IR");
+                            mChannel3.setText("No choice");
+
+                            surface.getRenderableSeries().remove(tempDataSeries);
+
+                            surface.getRenderableSeries().add(spo2DataSeries);
+                        }
+                    }
+            }
+        });
+
+        mSaveData.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    isDataSave = true;
+                    Log.e(TAG,"Data are saved");
+                } else {
+                    isDataSave = false;
+                    Log.e(TAG,"Data are not saved");
+                }
+            }
+        });
+
+        mFilterOn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    isFilteringOn = true;
+                    Log.e(TAG,"Data are filtered");
+                } else {
+                    isFilteringOn = false;
+                    Log.e(TAG, "Data are not filtered");
+                }
+            }
+        });
+
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        mClearGraph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clearGraph();
+            }
+        });
+
+        mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i == R.id.channel1){
+                    if(mChannelSelected !=1) {
+                        mChannelSelected = 1;
+                        clearGraph();
+                    }
+                } else if(i == R.id.channel2){
+                    if(mChannelSelected !=2) {
+                        mChannelSelected = 2;
+                        clearGraph();
+                    }
+                } else {
+                    if(mChannelSelected !=3) {
+                        mChannelSelected = 3;
+                        clearGraph();
+                    }
+                }
+            }
+        });
+
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        mCharText.setText(mCharUuid);
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBTLeService != null) {
+            final boolean result = mBTLeService.connect(mDeviceAddress);
+            Log.e(TAG, "Connect request result=" + result);
+
+        }
+
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBTLeService = null;
+    }
+
+
+    private void updateConnectionState(final int resourceId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mBTStatus.setText(resourceId);
+            }
+        });
+    }
+
+    private void displayDataECG(String data) {
+            if (data != null) {
+                ArrayList<Double> mDataList = new ArrayList<Double>();
+                String[] dataList = data.split("\n");
+                String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+                for(int i = 0 ; i < 30; i++){
+                    double mPoint = (double) Integer.parseInt(dataDecoded.substring(4*i, 4*i+4),16)*2.4/(32768-1);
+                    if(mPoint>2.4){
+                        mDataList.add((-4.8 + mPoint));
+                    } else {
+                        mDataList.add(mPoint);
+                    }
+                }
+                if (isDataSave) {
+                    String dataToSave = "";
+                    for (int j = 0; j < 10; j++) {
+                        dataToSave += "\n" + mDataList.get(3 * j + mChannelSelected - 1).toString();
+                        if (isFilteringOn) {
+                            ecgData.append((mCompteur + j) * 2, mBtwFilterLow.filter(mBtwFilterHigh.filter(mDataList.get(3 * j + mChannelSelected - 1))));
+                            surface.zoomExtents();
+
+                        } else {
+                            ecgData.append((mCompteur + j) * 2, mDataList.get(3 * j + mChannelSelected - 1));
+                            surface.zoomExtents();
+                        }
+
+                    }
+                        try {
+                            Log.e(TAG, dataToSave);
+                            outputStream.write(dataToSave.getBytes());
+                        } catch (IOException e) {
+                            Log.e(TAG, "Fail to write in file");
+                }
+                } else {
+                    for (int j = 0; j < 10; j++) {
+                        if (isFilteringOn) {
+                            ecgData.append((mCompteur + j)*2, mBtwFilterHigh.filter(mBtwFilterLow.filter(mDataList.get(3 * j + mChannelSelected - 1))));
+                            surface.zoomExtents();
+                        } else {
+                            double databug = mDataList.get(3 * j + mChannelSelected - 1);
+                            if (databug == 0){
+                                Log.e(TAG,dataDecoded);
+                            }
+                            ecgData.append((mCompteur + j)*2, mDataList.get(3 * j + mChannelSelected - 1));
+
+                            surface.zoomExtents();
+                        }
+                    }
+                }
+                mCompteur += 10;
+            }
+
+    }
+
+    private void displayDataAccelero(String data) {
+        if (data != null) {
+            String dataDecoded;
+            double dataDecodedX;
+            double dataDecodedY;
+            double dataDecodedZ;
+
+            if (mChannelSelected == 1) {
+                String[] dataList = data.split("\n");
+                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(0,4),16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(4,8),16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(8,12),16);
+                mCompteur += 1;
+
+                if(dataDecodedX > 32767){
+                    dataDecodedX = (- 65536 + dataDecodedX)*2/32768;
+                } else {
+                    dataDecodedX = dataDecodedX*2/32767;
+                }
+                if(dataDecodedY > 32767){
+                    dataDecodedY = (- 65536 + dataDecodedY)*2/32768;
+                } else {
+                    dataDecodedY = dataDecodedY*2/32767;
+                }
+                if(dataDecodedZ > 32767){
+                    dataDecodedZ = (- 65536 + dataDecodedZ)*2/32768;
+                } else {
+                    dataDecodedZ = dataDecodedZ*2/32767;
+                }
+
+            } else if (mChannelSelected == 2) {
+                String[] dataList = data.split("\n");
+                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(0,4),16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(4,8),16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(8,12),16);
+                mCompteur += 1;
+                if(dataDecodedX > 32767){
+                    dataDecodedX = (- 65536 + dataDecodedX)*250/32768;
+                } else {
+                    dataDecodedX = dataDecodedX*250/32767;
+                }
+                if(dataDecodedY > 32767){
+                    dataDecodedY = (- 65536 + dataDecodedY)*250/32768;
+                } else {
+                    dataDecodedY = dataDecodedY*250/32767;
+                }
+                if(dataDecodedZ > 32767){
+                    dataDecodedZ = (- 65536 + dataDecodedZ)*250/32768;
+                } else {
+                    dataDecodedZ = dataDecodedZ*250/32767;
+                }
+            } else {
+                String[] dataList = data.split("\n");
+                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(0,4),16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(4,8),16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(8,12),16);
+                mCompteur += 1;
+                if(dataDecodedX > 32767){
+                    dataDecodedX = (- 65536 + dataDecodedX)*2/32768;
+                } else {
+                    dataDecodedX = dataDecodedX*2/32767;
+                }
+                if(dataDecodedY > 32767){
+                    dataDecodedY = (- 65536 + dataDecodedY)*2/32768;
+                } else {
+                    dataDecodedY = dataDecodedY*2/32767;
+                }
+                if(dataDecodedZ > 32767){
+                    dataDecodedZ = (- 65536 + dataDecodedZ)*2/32768;
+                } else {
+                    dataDecodedZ = dataDecodedZ*2/32767;
+                }
+            }
+
+            inertialDataX.append(20*mCompteur, dataDecodedX);
+            inertialDataY.append(20*mCompteur, dataDecodedY);
+            inertialDataZ.append(20*mCompteur, dataDecodedZ);
+
+            surface.zoomExtents();
+        }
+    };
+
+    private void displayRespiration(String data){
+        if (data != null){
+            final String[] dataList = data.split("\n");
+            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+            final double dataDecodedT = Integer.parseInt(dataDecoded.substring(120,124),16);
+            final double dataDecodedA = Integer.parseInt(dataDecoded.substring(124,128),16);
+            mCompteur += 1;
+
+            respirationDataThorax.append(20*mCompteur, dataDecodedT);
+            respirationDataAbdo.append(20*mCompteur,dataDecodedA);
+
+            if (wrongFrame) {
+                Log.e(TAG, dataDecoded);
+            }
+            if (dataDecodedA > 1023){
+                Log.e(TAG, dataDecoded);
+                wrongFrame = true;
+            } else {
+                wrongFrame = false;
+            }
+            surface.zoomExtents();
+        }
+    };
+
+    private void displayTemp(String data){
+        if (data != null){
+            final String[] dataList = data.split("\n");
+            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+            final double dataDecodedTemp = Integer.parseInt(dataDecoded.substring(196,200),16);
+            mCompteur += 1;
+
+            tempData.append(20*mCompteur, 175.72*dataDecodedTemp/65536 - 46.85);
+
+            surface.zoomExtents();
+        }
+    }
+
+    private void displaySpO2(String data){
+        if (data != null){
+            final String[] dataList = data.split("\n");
+            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
+            final double dataDecodedR1MSB = Integer.parseInt(dataDecoded.substring(173,174),16);
+            final double dataDecodedR1LSB = Integer.parseInt(dataDecoded.substring(174,178),16);
+            final double dataDecodedIr1MSB = Integer.parseInt(dataDecoded.substring(179,180),16);
+            final double dataDecodedIr1LSB = Integer.parseInt(dataDecoded.substring(180,184),16);
+            final double dataDecodedR2MSB = Integer.parseInt(dataDecoded.substring(185,186),16);
+            final double dataDecodedR2LSB = Integer.parseInt(dataDecoded.substring(186,190),16);
+            final double dataDecodedIr2MSB = Integer.parseInt(dataDecoded.substring(191,192),16);
+            final double dataDecodedIr2LSB = Integer.parseInt(dataDecoded.substring(192,196),16);
+
+
+            mCompteur += 1;
+            if(isFilteringOn) {
+                if (mChannelSelected == 1) {
+                    spo2Data.append(20 * mCompteur, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536)));
+                    spo2Data.append(20 * mCompteur + 10, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536)));
+                } else {
+                    spo2Data.append(20 * mCompteur, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536)));
+                    spo2Data.append(20 * mCompteur + 10, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536)));
+                }
+            } else {
+                if (mChannelSelected == 1) {
+                    double databuged = dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536 + dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536;
+                    if (databuged > 20000){
+                        Log.e(TAG, data);
+                    }
+                    spo2Data.append(20 * mCompteur,dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536);
+                    spo2Data.append(20 * mCompteur + 10,dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536);
+                } else {
+                    double databuged = dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536 + dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536;
+                    if (databuged > 20000) {
+                        Log.e(TAG, data);
+                    }
+                    spo2Data.append(20 * mCompteur,dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536);
+                    spo2Data.append(20 * mCompteur + 10,dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536);
+                }
+            }
+
+            if(isDataSave){
+                String dataToSave = "";
+                dataToSave = "\n" + Double.toString(dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536) + ";"
+                        + Double.toString(dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536) + "\n"
+                        + Double.toString(dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536) + ";"
+                        + Double.toString(dataDecodedIr1LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536);
+
+                try{
+                    outputStream.write(dataToSave.getBytes());
+                } catch(Exception e){
+                    Log.e(TAG, "unable to write in file");
+                }
+            }
+            surface.zoomExtents();
+        }
+    }
+
+    private void clearUI() {
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    public void record() throws IOException {
+        if(!isRecording){
+            mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
+            mBTLeService.setCharacteristicNotification(mNotifyCharacteristic, true);
+            BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            clientConfig.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mRecord.setText("Stop Recording");
+
+            isRecording = true;
+        } else {
+            mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
+            mBTLeService.setCharacteristicNotification(mNotifyCharacteristic, false);
+            BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            clientConfig.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+            isRecording = false;
+            //Toast.makeText(this, outputStream.getFD().toString(), Toast.LENGTH_SHORT);
+            mRecord.setText("Record");
+        }
+    }
+
+    public void clearGraph() {
+        if(mCompteur !=0){
+            if(mServiceSelected == 1) {
+                ecgData.removeRange(0, ecgData.getCount());
+            } else if(mServiceSelected == 2){
+                inertialDataX.removeRange(0, inertialDataX.getCount());
+                inertialDataY.removeRange(0, inertialDataY.getCount());
+                inertialDataZ.removeRange(0, inertialDataZ.getCount());
+            } else if(mServiceSelected == 3){
+                respirationDataAbdo.removeRange(0, respirationDataAbdo.getCount());
+                respirationDataThorax.removeRange(0,respirationDataThorax.getCount());
+            } else if(mServiceSelected == 4){
+                tempData.removeRange(0,tempData.getCount());
+            } else {
+                spo2Data.removeRange(0,spo2Data.getCount());
+            }
+            mCompteur = 0;
+        } else {
+            Toast.makeText(this, "Graph is already cleared", Toast.LENGTH_SHORT);
+        }
+    }
+
+}

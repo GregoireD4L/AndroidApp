@@ -1,0 +1,11 @@
+#Internal package file, do not edit.
+#Tue Jan 16 17:29:49 CET 2018
+1.base=C\:\\Users\\AndroidDev\\Downloads\\android-BluetoothLeGatt-master\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\assets\\debug
+0.baseType=DIRECTORY
+1.baseType=DIRECTORY
+count=2
+1.set=ASSET
+0.path=AALineGradient.png
+0.set=ASSET
+0.base=C\:\\Users\\AndroidDev\\Downloads\\android-BluetoothLeGatt-master\\android-BluetoothLeGatt-master\\Application\\build\\intermediates\\assets\\debug
+1.path=circle.png

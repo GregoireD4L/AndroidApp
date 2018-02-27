@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.scichart.library:charting-2.0.0.1654">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/charting-2.0.0.1654.aar/2d1be4bdb1614cfff32b015af18762ec/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/charting-2.0.0.1654.aar/2d1be4bdb1614cfff32b015af18762ec/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
