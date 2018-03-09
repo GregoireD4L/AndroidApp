@@ -33,7 +33,7 @@ dependencies {
     compile(group: 'com.scichart.library', name: 'drawing', version: '2.0.0.1654', ext: 'aar')
     compile(group: 'com.scichart.library', name: 'charting', version: '2.0.0.1654', ext: 'aar')
     compile(group: 'com.scichart.library', name: 'extensions', version: '2.0.0.1654', ext: 'aar')
-    compile(group: 'org.influxdb', name: 'influxdb-java', version: '2.7')
+    compileOnly(group: 'org.influxdb', name: 'influxdb-java', version: '2.7')
 
 
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
