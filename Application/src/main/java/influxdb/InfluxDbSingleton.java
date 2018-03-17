@@ -1,4 +1,4 @@
-package influxdb;
+package com.example.android.influxDB;
 
 import android.content.res.Resources;
 
@@ -6,10 +6,6 @@ import com.example.android.bluetoothlegatt.R;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.BatchPoints;
-import org.influxdb.dto.Point;
-
-import java.util.List;
 
 
 /**
@@ -21,10 +17,13 @@ public class InfluxDbSingleton {
     private InfluxDB  influxDB = null;
     private static String dbName = "dataforlifeDB";
     private static String rpName = "aRetentionPolicy";
-    private static final InfluxDbSingleton ourInstance = new InfluxDbSingleton();
+    private static InfluxDbSingleton instance=null;
 
-    public static InfluxDbSingleton getInstance() {
-        return ourInstance;
+    public static InfluxDbSingleton getInstance()
+    {
+        if(instance==null)
+            instance= new InfluxDbSingleton();
+        return instance;
     }
 
     private InfluxDbSingleton() {
@@ -34,16 +33,14 @@ public class InfluxDbSingleton {
         this.influxDB = InfluxDBFactory.connect(influxDbIp,influxDbId,influxDbPwd);
     }
 
-    public void write(Point point){
-        this.influxDB.write(point);
+    public InfluxDB getInfluxDB(){
+        return influxDB;
     }
 
-    public void writeFromDoubleList(List<Double> pointList){
-
-        BatchPoints batchPoints = BatchPoints.database(this.dbName).tag("async", "true")
-                .retentionPolicy(rpName)
-                .consistency(InfluxDB.ConsistencyLevel.ALL)
-                .build();
-
+    public String getDbName(){
+        return dbName;
+    }
+    public String getRpName(){
+        return rpName;
     }
 }
