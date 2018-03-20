@@ -57,6 +57,11 @@
             android:enabled="true" />
 
         <activity android:name=".DataDisplayActivity" />
+        <activity android:name=".SendDataActivity" />
+
+        <service
+            android:name="com.example.android.databaseservice.influxDbIntentService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

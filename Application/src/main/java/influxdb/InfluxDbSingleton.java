@@ -1,4 +1,4 @@
-package com.example.android.influxDB;
+package influxdb;
 
 import android.content.res.Resources;
 
@@ -6,6 +6,10 @@ import com.example.android.bluetoothlegatt.R;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.BatchPoints;
+import org.influxdb.dto.Point;
+
+import java.util.List;
 
 
 /**
