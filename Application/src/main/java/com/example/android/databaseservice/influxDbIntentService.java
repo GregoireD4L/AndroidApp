@@ -10,7 +10,10 @@ import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +53,13 @@ public class influxDbIntentService extends IntentService{
         }
     }
 
+    private ArrayList<Point> createPoints(String table,ArrayList<HashMap<String,Object>> fieldMap){
+        ArrayList<Point> points = new ArrayList<>();
+        for(int i = 0; i < fieldMap.size(); i++){
+            points.add(this.createPoint(table,fieldMap.get(i)));
+        }
+        return points;
+    }
 
     private Point createPoint(String table, HashMap<String,Object> fieldMap){
 
