@@ -27,6 +27,13 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.display.DisplayDataAcceleroImpl;
+import com.example.android.display.DisplayEcgImpl;
+import com.example.android.display.DisplayRespirationImpl;
+import com.example.android.display.DisplaySpO2Impl;
+import com.example.android.display.DisplayTempImpl;
+import com.example.android.display.IDisplayData;
+import com.example.android.display.IDisplayDataWithMultipleDataSeries;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -665,8 +672,6 @@ public class DataDisplayActivity extends Activity {
             Log.e(TAG, "Connect request result=" + result);
 
         }
-
-
     }
 
     @Override
@@ -692,140 +697,31 @@ public class DataDisplayActivity extends Activity {
         });
     }
 
+
     private void displayDataECG(String data) {
-            if (data != null) {
-                ArrayList<Double> mDataList = new ArrayList<Double>();
-                String[] dataList = data.split("\n");
-                String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                for(int i = 0 ; i < 30; i++){
-                    double mPoint = (double) Integer.parseInt(dataDecoded.substring(4*i, 4*i+4),16)*2.4/(32768-1);
-                    if(mPoint>2.4){
-                        mDataList.add((-4.8 + mPoint));
-                    } else {
-                        mDataList.add(mPoint);
-                    }
-                }
-                if (isDataSave) {
-                    String dataToSave = "";
-                    for (int j = 0; j < 10; j++) {
-                        dataToSave += "\n" + mDataList.get(3 * j + mChannelSelected - 1).toString();
-                        if (isFilteringOn) {
-                            ecgData.append((mCompteur + j) * 2, mBtwFilterLow.filter(mBtwFilterHigh.filter(mDataList.get(3 * j + mChannelSelected - 1))));
-                            surface.zoomExtents();
 
-                        } else {
-                            ecgData.append((mCompteur + j) * 2, mDataList.get(3 * j + mChannelSelected - 1));
-                            surface.zoomExtents();
-                        }
-
-                    }
-                        try {
-                            Log.e(TAG, dataToSave);
-                            outputStream.write(dataToSave.getBytes());
-                        } catch (IOException e) {
-                            Log.e(TAG, "Fail to write in file");
-                }
-                } else {
-                    for (int j = 0; j < 10; j++) {
-                        if (isFilteringOn) {
-                            ecgData.append((mCompteur + j)*2, mBtwFilterHigh.filter(mBtwFilterLow.filter(mDataList.get(3 * j + mChannelSelected - 1))));
-                            surface.zoomExtents();
-                        } else {
-                            double databug = mDataList.get(3 * j + mChannelSelected - 1);
-                            if (databug == 0){
-                                Log.e(TAG,dataDecoded);
-                            }
-                            ecgData.append((mCompteur + j)*2, mDataList.get(3 * j + mChannelSelected - 1));
-
-                            surface.zoomExtents();
-                        }
-                    }
-                }
-                mCompteur += 10;
+        if (data != null) {
+            IDisplayData displayEcgData = new DisplayEcgImpl();
+            ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
+            dataToAddToDataSeries = displayEcgData.displayData(data,isDataSave,mChannelSelected,isFilteringOn,mCompteur);
+            for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
+                ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
-
+            surface.zoomExtents();
+            mCompteur += 10;
+        }
     }
 
     private void displayDataAccelero(String data) {
         if (data != null) {
-            String dataDecoded;
-            double dataDecodedX;
-            double dataDecodedY;
-            double dataDecodedZ;
 
-            if (mChannelSelected == 1) {
-                String[] dataList = data.split("\n");
-                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(0,4),16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(4,8),16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(24,36).substring(8,12),16);
-                mCompteur += 1;
+            IDisplayDataWithMultipleDataSeries dataAccelero = new DisplayDataAcceleroImpl();
+            ArrayList<Double> dataList =  dataAccelero.displayData(data,mChannelSelected);
 
-                if(dataDecodedX > 32767){
-                    dataDecodedX = (- 65536 + dataDecodedX)*2/32768;
-                } else {
-                    dataDecodedX = dataDecodedX*2/32767;
-                }
-                if(dataDecodedY > 32767){
-                    dataDecodedY = (- 65536 + dataDecodedY)*2/32768;
-                } else {
-                    dataDecodedY = dataDecodedY*2/32767;
-                }
-                if(dataDecodedZ > 32767){
-                    dataDecodedZ = (- 65536 + dataDecodedZ)*2/32768;
-                } else {
-                    dataDecodedZ = dataDecodedZ*2/32767;
-                }
-
-            } else if (mChannelSelected == 2) {
-                String[] dataList = data.split("\n");
-                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(0,4),16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(4,8),16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(12,24).substring(8,12),16);
-                mCompteur += 1;
-                if(dataDecodedX > 32767){
-                    dataDecodedX = (- 65536 + dataDecodedX)*250/32768;
-                } else {
-                    dataDecodedX = dataDecodedX*250/32767;
-                }
-                if(dataDecodedY > 32767){
-                    dataDecodedY = (- 65536 + dataDecodedY)*250/32768;
-                } else {
-                    dataDecodedY = dataDecodedY*250/32767;
-                }
-                if(dataDecodedZ > 32767){
-                    dataDecodedZ = (- 65536 + dataDecodedZ)*250/32768;
-                } else {
-                    dataDecodedZ = dataDecodedZ*250/32767;
-                }
-            } else {
-                String[] dataList = data.split("\n");
-                dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(0,4),16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(4,8),16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(0,12).substring(8,12),16);
-                mCompteur += 1;
-                if(dataDecodedX > 32767){
-                    dataDecodedX = (- 65536 + dataDecodedX)*2/32768;
-                } else {
-                    dataDecodedX = dataDecodedX*2/32767;
-                }
-                if(dataDecodedY > 32767){
-                    dataDecodedY = (- 65536 + dataDecodedY)*2/32768;
-                } else {
-                    dataDecodedY = dataDecodedY*2/32767;
-                }
-                if(dataDecodedZ > 32767){
-                    dataDecodedZ = (- 65536 + dataDecodedZ)*2/32768;
-                } else {
-                    dataDecodedZ = dataDecodedZ*2/32767;
-                }
-            }
-
-            inertialDataX.append(20*mCompteur, dataDecodedX);
-            inertialDataY.append(20*mCompteur, dataDecodedY);
-            inertialDataZ.append(20*mCompteur, dataDecodedZ);
+            mCompteur += 1;
+            inertialDataX.append(20*mCompteur, dataList.get(0));
+            inertialDataY.append(20*mCompteur, dataList.get(1));
+            inertialDataZ.append(20*mCompteur, dataList.get(2));
 
             surface.zoomExtents();
         }
@@ -833,96 +729,51 @@ public class DataDisplayActivity extends Activity {
 
     private void displayRespiration(String data){
         if (data != null){
-            final String[] dataList = data.split("\n");
-            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-            final double dataDecodedT = Integer.parseInt(dataDecoded.substring(120,124),16);
-            final double dataDecodedA = Integer.parseInt(dataDecoded.substring(124,128),16);
+
+            IDisplayDataWithMultipleDataSeries dataRespiration = new DisplayRespirationImpl();
+            ArrayList<Double> dataList = dataRespiration.displayData(data,mChannelSelected);
             mCompteur += 1;
+
+            Double dataDecodedT = dataList.get(0);
+            Double dataDecodedA = dataList.get(1);
 
             respirationDataThorax.append(20*mCompteur, dataDecodedT);
             respirationDataAbdo.append(20*mCompteur,dataDecodedA);
 
-            if (wrongFrame) {
+            /*if (wrongFrame) {
                 Log.e(TAG, dataDecoded);
-            }
+            }*/
             if (dataDecodedA > 1023){
-                Log.e(TAG, dataDecoded);
+                //Log.e(TAG, dataDecoded);
                 wrongFrame = true;
             } else {
                 wrongFrame = false;
             }
             surface.zoomExtents();
         }
-    };
+    }
 
     private void displayTemp(String data){
         if (data != null){
-            final String[] dataList = data.split("\n");
-            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-            final double dataDecodedTemp = Integer.parseInt(dataDecoded.substring(196,200),16);
+            IDisplayDataWithMultipleDataSeries dataTempArray = new DisplayTempImpl();
             mCompteur += 1;
-
-            tempData.append(20*mCompteur, 175.72*dataDecodedTemp/65536 - 46.85);
-
+            tempData.append(20*mCompteur, 175.72*dataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
             surface.zoomExtents();
         }
     }
 
     private void displaySpO2(String data){
-        if (data != null){
-            final String[] dataList = data.split("\n");
-            final String dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-            final double dataDecodedR1MSB = Integer.parseInt(dataDecoded.substring(173,174),16);
-            final double dataDecodedR1LSB = Integer.parseInt(dataDecoded.substring(174,178),16);
-            final double dataDecodedIr1MSB = Integer.parseInt(dataDecoded.substring(179,180),16);
-            final double dataDecodedIr1LSB = Integer.parseInt(dataDecoded.substring(180,184),16);
-            final double dataDecodedR2MSB = Integer.parseInt(dataDecoded.substring(185,186),16);
-            final double dataDecodedR2LSB = Integer.parseInt(dataDecoded.substring(186,190),16);
-            final double dataDecodedIr2MSB = Integer.parseInt(dataDecoded.substring(191,192),16);
-            final double dataDecodedIr2LSB = Integer.parseInt(dataDecoded.substring(192,196),16);
 
-
+        if (data != null) {
+            IDisplayData displayspo2Data = new DisplaySpO2Impl();
+            ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
+            dataToAddToDataSeries = displayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn,mCompteur);
+            for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
+                ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
+            }
             mCompteur += 1;
-            if(isFilteringOn) {
-                if (mChannelSelected == 1) {
-                    spo2Data.append(20 * mCompteur, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536)));
-                    spo2Data.append(20 * mCompteur + 10, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536)));
-                } else {
-                    spo2Data.append(20 * mCompteur, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536)));
-                    spo2Data.append(20 * mCompteur + 10, mBtwFilterLow.filter(mBtwFilterHigh.filter(dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536)));
-                }
-            } else {
-                if (mChannelSelected == 1) {
-                    double databuged = dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536 + dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536;
-                    if (databuged > 20000){
-                        Log.e(TAG, data);
-                    }
-                    spo2Data.append(20 * mCompteur,dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536);
-                    spo2Data.append(20 * mCompteur + 10,dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536);
-                } else {
-                    double databuged = dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536 + dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536;
-                    if (databuged > 20000) {
-                        Log.e(TAG, data);
-                    }
-                    spo2Data.append(20 * mCompteur,dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536);
-                    spo2Data.append(20 * mCompteur + 10,dataDecodedIr2LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536);
-                }
-            }
-
-            if(isDataSave){
-                String dataToSave = "";
-                dataToSave = "\n" + Double.toString(dataDecodedR1LSB + ((dataDecodedR1MSB % 2) + ((dataDecodedR1MSB - (dataDecodedR1MSB % 2)) % 4)) * 65536) + ";"
-                        + Double.toString(dataDecodedIr1LSB + ((dataDecodedIr1MSB % 2) + ((dataDecodedIr1MSB - (dataDecodedIr1MSB % 2)) % 4)) * 65536) + "\n"
-                        + Double.toString(dataDecodedR2LSB + ((dataDecodedR2MSB % 2) + ((dataDecodedR2MSB - (dataDecodedR2MSB % 2)) % 4)) * 65536) + ";"
-                        + Double.toString(dataDecodedIr1LSB + ((dataDecodedIr2MSB % 2) + ((dataDecodedIr2MSB - (dataDecodedIr2MSB % 2)) % 4)) * 65536);
-
-                try{
-                    outputStream.write(dataToSave.getBytes());
-                } catch(Exception e){
-                    Log.e(TAG, "unable to write in file");
-                }
-            }
             surface.zoomExtents();
+
         }
     }
 
