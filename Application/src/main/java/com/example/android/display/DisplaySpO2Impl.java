@@ -72,7 +72,7 @@ public class DisplaySpO2Impl implements IDisplayData {
     }
 
     @Override
-    public ArrayList<Double> displayData(String data, boolean isDataSave, int channelSelected, boolean isFilteringOn, int compteur) {
+    public ArrayList<Double> displayData(String data, boolean isDataSave, int channelSelected, boolean isFilteringOn) {
         ArrayList<Double> spo2Data = new ArrayList<>();
         if (data != null) {
             final String[] dataList = data.split("\n");

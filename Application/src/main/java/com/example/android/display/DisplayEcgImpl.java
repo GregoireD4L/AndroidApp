@@ -92,7 +92,7 @@ public class DisplayEcgImpl implements IDisplayData {
     }*/
 
     @Override
-    public ArrayList<Double> displayData(String data, boolean isDataSave, int channelSelected, boolean isFilteringOn, int compteur ) {
+    public ArrayList<Double> displayData(String data, boolean isDataSave, int channelSelected, boolean isFilteringOn) {
 
         ArrayList<Double> ecgData;
         ArrayList<Double> dataList = this.getDataFromString(data);

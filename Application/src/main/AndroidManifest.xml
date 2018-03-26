@@ -60,7 +60,7 @@
         <activity android:name=".SendDataActivity" />
 
         <service
-            android:name="com.example.android.databaseservice.influxDbIntentService"
+            android:name="com.example.android.databaseservice.InfluxDbIntentService"
             android:exported="false"></service>
     </application>
 

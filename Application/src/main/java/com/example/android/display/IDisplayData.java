@@ -18,7 +18,7 @@ public interface IDisplayData{
 
     ArrayList<Double> getDataWithFilter(ArrayList<Double> dataList, int channelSelected);
 
-    ArrayList<Double> displayData(String data, boolean isDataSave, int mChannelSelected, boolean isFilteringOn , int compteur);
+    ArrayList<Double> displayData(String data, boolean isDataSave, int mChannelSelected, boolean isFilteringOn);
 
 
     default XyDataSeries clearGraph(XyDataSeries dataToClear){

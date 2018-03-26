@@ -27,6 +27,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.databaseservice.InfluxDbIntentService;
 import com.example.android.display.DisplayDataAcceleroImpl;
 import com.example.android.display.DisplayEcgImpl;
 import com.example.android.display.DisplayRespirationImpl;
@@ -48,16 +49,15 @@ import com.scichart.drawing.utility.ColorUtil;
 import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Currency;
-import java.util.List;
+
 import java.util.UUID;
-import java.lang.Math;
+
 
 import uk.me.berndporr.iirj.Butterworth;
 
@@ -182,16 +182,24 @@ public class DataDisplayActivity extends Activity {
                 // Show all the supported services and characteristics on the user interface.
                 //displayGattServices(mBTLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+
+                String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+                //lancer l'intentService d'influx db ici
+                Intent dataService = new Intent(context, InfluxDbIntentService.class);
+                dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
+                startService(dataService);
+
+
                 if (mServiceSelected == 1){
-                    displayDataECG(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displayDataECG(intentData);
                 } else if (mServiceSelected == 2){
-                    displayDataAccelero(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displayDataAccelero(intentData);
                 } else if (mServiceSelected == 3){
-                    displayRespiration(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displayRespiration(intentData);
                  }else if (mServiceSelected == 4){
-                    displayTemp(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displayTemp(intentData);
                 } else {
-                    displaySpO2(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                    displaySpO2(intentData);
                 }
             }
         }
@@ -703,7 +711,7 @@ public class DataDisplayActivity extends Activity {
         if (data != null) {
             IDisplayData displayEcgData = new DisplayEcgImpl();
             ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
-            dataToAddToDataSeries = displayEcgData.displayData(data,isDataSave,mChannelSelected,isFilteringOn,mCompteur);
+            dataToAddToDataSeries = displayEcgData.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
@@ -767,7 +775,7 @@ public class DataDisplayActivity extends Activity {
         if (data != null) {
             IDisplayData displayspo2Data = new DisplaySpO2Impl();
             ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
-            dataToAddToDataSeries = displayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn,mCompteur);
+            dataToAddToDataSeries = displayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
