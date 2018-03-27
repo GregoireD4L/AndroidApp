@@ -25,15 +25,17 @@ public class InfluxDbSingleton {
 
     public static InfluxDbSingleton getInstance()
     {
-        if(instance==null)
-            instance= new InfluxDbSingleton();
+        if(instance == null)
+            instance = new InfluxDbSingleton();
         return instance;
     }
 
     private InfluxDbSingleton() {
-        String influxDbIp = Resources.getSystem().getString(R.string.influx_db_ip);
-        String influxDbId = Resources.getSystem().getString(R.string.influx_db_id);
-        String influxDbPwd = Resources.getSystem().getString(R.string.influx_db_pwd);
+
+        String influxDbIp = "http://172.31.32.187";//Resources.getSystem().getString(R.string.influx_db_ip);
+        String influxDbId = "Esgi_User";//Resources.getSystem().getString(R.string.influx_db_id);
+        String influxDbPwd = "dataforlife2018";//Resources.getSystem().getString(R.string.influx_db_pwd);
+
         this.influxDB = InfluxDBFactory.connect(influxDbIp,influxDbId,influxDbPwd);
     }
 

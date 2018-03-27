@@ -136,6 +136,15 @@ public class DataDisplayActivity extends Activity {
 
     private boolean wrongFrame = false;
 
+
+    // classe de display
+
+    private IDisplayData mDisplayEcgData = new DisplayEcgImpl();
+    private IDisplayDataWithMultipleDataSeries mDataAccelero = new DisplayDataAcceleroImpl();
+    private IDisplayDataWithMultipleDataSeries mDataRespiration = new DisplayRespirationImpl();
+    private IDisplayDataWithMultipleDataSeries mDataTempArray = new DisplayTempImpl();
+    private IDisplayData mDisplayspo2Data = new DisplaySpO2Impl();
+
     //////////////////// Fin de la déclaration des variables globales //////////////////////////////
 
     ////////////////////////////// Instanciation des objets BT /////////////////////////////////////
@@ -167,6 +176,7 @@ public class DataDisplayActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            Log.e(TAG, "ENTRE DANS LE BROADCAST RECEIVER");
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 updateConnectionState(R.string.connected);
@@ -183,7 +193,7 @@ public class DataDisplayActivity extends Activity {
                 //displayGattServices(mBTLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 
-                String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+             String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 //lancer l'intentService d'influx db ici
                 Intent dataService = new Intent(context, InfluxDbIntentService.class);
                 dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
@@ -709,9 +719,7 @@ public class DataDisplayActivity extends Activity {
     private void displayDataECG(String data) {
 
         if (data != null) {
-            IDisplayData displayEcgData = new DisplayEcgImpl();
-            ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
-            dataToAddToDataSeries = displayEcgData.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
+            ArrayList<Double> dataToAddToDataSeries = mDisplayEcgData.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
@@ -723,8 +731,7 @@ public class DataDisplayActivity extends Activity {
     private void displayDataAccelero(String data) {
         if (data != null) {
 
-            IDisplayDataWithMultipleDataSeries dataAccelero = new DisplayDataAcceleroImpl();
-            ArrayList<Double> dataList =  dataAccelero.displayData(data,mChannelSelected);
+            ArrayList<Double> dataList =  mDataAccelero.displayData(data,mChannelSelected);
 
             mCompteur += 1;
             inertialDataX.append(20*mCompteur, dataList.get(0));
@@ -738,8 +745,8 @@ public class DataDisplayActivity extends Activity {
     private void displayRespiration(String data){
         if (data != null){
 
-            IDisplayDataWithMultipleDataSeries dataRespiration = new DisplayRespirationImpl();
-            ArrayList<Double> dataList = dataRespiration.displayData(data,mChannelSelected);
+
+            ArrayList<Double> dataList = mDataRespiration.displayData(data,mChannelSelected);
             mCompteur += 1;
 
             Double dataDecodedT = dataList.get(0);
@@ -763,9 +770,9 @@ public class DataDisplayActivity extends Activity {
 
     private void displayTemp(String data){
         if (data != null){
-            IDisplayDataWithMultipleDataSeries dataTempArray = new DisplayTempImpl();
+
             mCompteur += 1;
-            tempData.append(20*mCompteur, 175.72*dataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
+            tempData.append(20*mCompteur, 175.72*mDataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
             surface.zoomExtents();
         }
     }
@@ -773,9 +780,8 @@ public class DataDisplayActivity extends Activity {
     private void displaySpO2(String data){
 
         if (data != null) {
-            IDisplayData displayspo2Data = new DisplaySpO2Impl();
-            ArrayList<Double> dataToAddToDataSeries = new ArrayList<>();
-            dataToAddToDataSeries = displayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
+
+            ArrayList<Double>  dataToAddToDataSeries = mDisplayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
@@ -820,7 +826,7 @@ public class DataDisplayActivity extends Activity {
     public void clearGraph() {
         if(mCompteur !=0){
             if(mServiceSelected == 1) {
-                ecgData.removeRange(0, ecgData.getCount());
+                ecgData = this.mDisplayEcgData.clearGraph(ecgData);
             } else if(mServiceSelected == 2){
                 inertialDataX.removeRange(0, inertialDataX.getCount());
                 inertialDataY.removeRange(0, inertialDataY.getCount());
@@ -831,7 +837,7 @@ public class DataDisplayActivity extends Activity {
             } else if(mServiceSelected == 4){
                 tempData.removeRange(0,tempData.getCount());
             } else {
-                spo2Data.removeRange(0,spo2Data.getCount());
+                spo2Data = this.mDisplayspo2Data.clearGraph(spo2Data);
             }
             mCompteur = 0;
         } else {
