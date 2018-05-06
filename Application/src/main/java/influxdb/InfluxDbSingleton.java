@@ -31,12 +31,13 @@ public class InfluxDbSingleton {
     }
 
     private InfluxDbSingleton() {
+        /* A changer plus tard pour la securité de l'application */
 
-        String influxDbIp = "http://172.31.32.187";//Resources.getSystem().getString(R.string.influx_db_ip);
-        String influxDbId = "Esgi_User";//Resources.getSystem().getString(R.string.influx_db_id);
+        String influxDbIp = "http://18.219.195.119:8086";//Resources.getSystem().getString(R.string.influx_db_ip);
+        String influxDbId = "esgi";//Resources.getSystem().getString(R.string.influx_db_id);
         String influxDbPwd = "dataforlife2018";//Resources.getSystem().getString(R.string.influx_db_pwd);
 
-        this.influxDB = InfluxDBFactory.connect(influxDbIp,influxDbId,influxDbPwd);
+        this.influxDB = InfluxDBFactory.connect(influxDbIp, influxDbId, influxDbPwd);
     }
 
     public InfluxDB getInfluxDB(){

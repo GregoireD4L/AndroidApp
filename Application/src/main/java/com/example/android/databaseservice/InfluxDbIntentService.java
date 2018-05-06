@@ -111,11 +111,12 @@ public class InfluxDbIntentService extends IntentService{
 
     private Point createPoint(String table, HashMap<String,Object> fieldMap){
 
-        Point point = Point.measurement(table)
+           Point point = Point.measurement(table)
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .fields(fieldMap).build();
+         //Point.Builder point = Point.measurement(table);//.time(System.currentTimeMillis(), TimeUnit.MILLISECONDS).addField("a","b").build();
 
-        return point;
+         return point;
     }
 
 

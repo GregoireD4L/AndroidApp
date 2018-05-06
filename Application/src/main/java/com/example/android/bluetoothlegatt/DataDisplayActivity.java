@@ -1,10 +1,8 @@
 package com.example.android.bluetoothlegatt;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,9 +11,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.style.TtsSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.databaseservice.InfluxDbIntentService;
+import com.example.android.databaseservice.MessageProducer;
 import com.example.android.display.DisplayDataAcceleroImpl;
 import com.example.android.display.DisplayEcgImpl;
 import com.example.android.display.DisplayRespirationImpl;
@@ -35,11 +32,6 @@ import com.example.android.display.DisplaySpO2Impl;
 import com.example.android.display.DisplayTempImpl;
 import com.example.android.display.IDisplayData;
 import com.example.android.display.IDisplayDataWithMultipleDataSeries;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-import com.jjoe64.graphview.series.Series;
-import com.scichart.charting.model.dataSeries.XDataSeries;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -136,6 +128,9 @@ public class DataDisplayActivity extends Activity {
 
     private boolean wrongFrame = false;
 
+    // RABITTMQServices
+    private MessageProducer mMessageProducer = null;
+
 
     // classe de display
 
@@ -160,7 +155,7 @@ public class DataDisplayActivity extends Activity {
             // Automatically connects to the device upon successful start-up initialization.
             mBTLeService.connect(mDeviceAddress);
             if(mBTLeService == null){
-                Log.e(TAG, "nul" + mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid)).getUuid().toString());
+                Log.e(TAG, "null");
             } else {
                 Log.e(TAG, "bien" + mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid)).getUuid().toString());
             }
@@ -176,7 +171,6 @@ public class DataDisplayActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            Log.e(TAG, "ENTRE DANS LE BROADCAST RECEIVER");
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 updateConnectionState(R.string.connected);
@@ -195,9 +189,15 @@ public class DataDisplayActivity extends Activity {
 
              String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 //lancer l'intentService d'influx db ici
-                Intent dataService = new Intent(context, InfluxDbIntentService.class);
-                dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
-                startService(dataService);
+                //Intent dataService = new Intent(context, InfluxDbIntentService.class);
+                // dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
+                //startService(dataService);
+
+
+
+                //Connect to broker
+                //mMessageProducer.connectToRabbitMQ();
+                mMessageProducer.publishToRabbitMQ(intentData);
 
 
                 if (mServiceSelected == 1){
@@ -225,6 +225,10 @@ public class DataDisplayActivity extends Activity {
         setContentView(R.layout.data_display);
 
         // Déclaration de la view graphe
+
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "fanout");
 
         surface = new SciChartSurface(this);
         newGraph = (LinearLayout) findViewById(R.id.newGraph);
@@ -684,23 +688,28 @@ public class DataDisplayActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        /*if(mMessageProducer!= null)
+            mMessageProducer.connectToRabbitMQ();*/
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBTLeService != null) {
             final boolean result = mBTLeService.connect(mDeviceAddress);
             Log.e(TAG, "Connect request result=" + result);
-
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        //if(mMessageProducer!=null)
+          //  mMessageProducer.dispose();
         unregisterReceiver(mGattUpdateReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+       // if(mMessageProducer!=null)
+         //   mMessageProducer.dispose();
         unbindService(mServiceConnection);
         mBTLeService = null;
     }
