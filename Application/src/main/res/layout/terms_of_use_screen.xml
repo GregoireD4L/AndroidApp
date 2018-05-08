@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:minHeight="@dimen/margin_huge"
+        android:paddingStart="@dimen/margin_medium"
+        android:layout_marginBottom="30dp">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_launcher"
+            android:layout_marginEnd="@dimen/margin_medium"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/text_color_primary"
+            android:layout_marginLeft="@dimen/margin_medium"
+            android:textSize="20sp" />
+    </android.support.v7.widget.Toolbar>
+
+
+    <android.support.v7.widget.AppCompatTextView
+        android:layout_marginStart="10dp"
+        android:id="@+id/terms_of_use"
+        android:layout_marginEnd="10dp"
+        android:scrollbars = "vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/terms_of_use"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="100dp"
+            android:id="@+id/agree_terms"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/margin_huge"
+            android:text="@string/agree"
+            android:background="@drawable/mybutton_validation"/>
+
+        <android.support.v7.widget.AppCompatButton
+            android:layout_width="100dp"
+            android:id="@+id/back_terms"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/margin_huge"
+            android:text="@string/back"
+            android:background="@drawable/mybutton_standard"/>
+    </LinearLayout>
+
+</LinearLayout>

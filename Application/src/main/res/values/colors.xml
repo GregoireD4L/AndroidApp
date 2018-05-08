@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_material_light">#fefefe</color>
+    <color name="accent_material_light">#11c1ff</color>
+    <color name="primary_dark_material_light">#ffffff</color>
+    <color name="background_material_dark">#ffffff</color>
+    <color name="text_color_primary">#010101</color>
+    <color name="button_register">#339966</color>
+</resources>

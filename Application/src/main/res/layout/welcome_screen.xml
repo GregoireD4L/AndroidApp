@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="138dp"
+        android:layout_height="189dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_launcher_splash"
+        android:layout_marginBottom="150dp"
+        android:layout_marginTop="@dimen/margin_medium"/>
+
+    <android.support.v7.widget.AppCompatButton
+        android:layout_width="220dp"
+        android:id="@+id/register_main_screen"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="@dimen/margin_medium"
+        android:text="Register"
+        android:background="@drawable/mybutton_standard"/>
+
+
+    <android.support.v7.widget.AppCompatButton
+        android:layout_width="220dp"
+        android:id="@+id/login_main_screen"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Log in"
+        android:background="@drawable/mybutton_standard"/>
+
+</LinearLayout>

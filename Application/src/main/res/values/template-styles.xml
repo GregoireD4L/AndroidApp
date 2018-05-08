@@ -18,11 +18,16 @@
 
     <!-- Activity themes -->
 
-    <style name="Theme.Base" parent="android:Theme.Light" />
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="android:colorPrimary">@color/primary_material_light</item>
+        <item name="android:colorAccent">@color/accent_material_light</item>
+        <item name="android:colorPrimaryDark">@color/primary_dark_material_light</item>
+        <item name="android:navigationBarColor">@color/accent_material_light</item>
+    </style>
 
-    <style name="Theme.Sample" parent="Theme.Base" />
-
-    <style name="AppTheme" parent="Theme.Sample" />
+    <style name="AppTheme.splashScreen" parent="AppTheme">
+        <item name="android:windowBackground">@color/cardview_light_background</item>
+    </style>
     <!-- Widget styling -->
 
     <style name="Widget" />
