@@ -34,8 +34,8 @@ public class MessageProducer extends IConnectToRabbitMQ {
                         e.printStackTrace();
                     }
 
-                    }
                 }
+            }
 
         };
         thread.start();

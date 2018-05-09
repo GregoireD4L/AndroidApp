@@ -63,6 +63,7 @@ public abstract class IConnectToRabbitMQ {
             ConnectionFactory connectionFactory = new ConnectionFactory();
             connectionFactory.setUsername("dataforlife");
             connectionFactory.setPassword("dataforlife2018");
+            connectionFactory.setVirtualHost("myvhost");
             connectionFactory.setPort(5672);
             connectionFactory.setHost(mServer);
 
