@@ -43,8 +43,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/stopBroadcast"
         android:background="@drawable/mybutton_standard"
+        android:textColor="@color/accent_material_light"
         android:textSize="@dimen/margin_medium"
-        android:textColor="#000"
         android:text="Record"/>
 
     <LinearLayout android:orientation="horizontal"

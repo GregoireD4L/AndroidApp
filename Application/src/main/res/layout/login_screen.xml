@@ -41,6 +41,7 @@
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/margin_huge"
             android:text="@string/login"
+            android:textColor="@color/primary_material_light"
             android:background="@drawable/mybutton_validation"/>
 
         <android.support.v7.widget.AppCompatButton
@@ -50,6 +51,7 @@
             android:layout_gravity="center"
             android:layout_marginStart="@dimen/margin_huge"
             android:text="@string/cancel"
+            android:textColor="@color/accent_material_light"
             android:background="@drawable/mybutton_standard"/>
     </LinearLayout>
 

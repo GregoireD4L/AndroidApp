@@ -18,6 +18,7 @@
         android:layout_gravity="center"
         android:layout_marginBottom="@dimen/margin_medium"
         android:text="Register"
+        android:textColor="@color/accent_material_light"
         android:background="@drawable/mybutton_standard"/>
 
 
@@ -27,6 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Log in"
+        android:textColor="@color/accent_material_light"
         android:background="@drawable/mybutton_standard"/>
 
 </LinearLayout>
