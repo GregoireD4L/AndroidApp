@@ -20,7 +20,7 @@ public class InstructionsActivity extends AppCompatActivity {
         instructions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(InstructionsActivity.this, DeviceScanActivity.class);
+                Intent intent = new Intent(InstructionsActivity.this, InstructionsPagerActivity.class);
                 startActivity(intent);
             }
         });
