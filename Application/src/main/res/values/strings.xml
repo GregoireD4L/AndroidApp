@@ -35,6 +35,15 @@
     <string name="agree">I agree</string>
     <string name="back">Back</string>
     <string name="instructions_button">Instructions</string>
+    <string name="bluetooth_instructions">In your device settings, go to bluetooth and turn it on</string>
+    <string name="batterie_instructions">Make sure Data For Life battery is fully charged and clipped to the t-shirt</string>
+    <string name="selection_instructions">Open Data For Life app and Log in
+    On the first screen, you will see a list of all active Data For Life t-shirts around you.
+    Tape on your t-shirt unique ID to pair it.</string>
+    <string name="paired_instructions">Paired !</string>
+    <string name="paired_instructions_2">Wait a few seconds until your Data For Life is paired
+and properly paired.
+You will be automatically redirected to the home page.</string>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
