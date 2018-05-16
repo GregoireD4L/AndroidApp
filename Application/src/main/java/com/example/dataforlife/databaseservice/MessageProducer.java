@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.example.dataforlife.model.CustomMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +37,10 @@ public class MessageProducer extends IConnectToRabbitMQ {
                          ByteArrayOutputStream out = new ByteArrayOutputStream();
                          mapper.writeValue(out, message);
                          Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
-                         mModel.basicPublish(mExchange, "influxData", null,out.toByteArray());
+                         mModel.basicPublish(mExchange, "influxData",
+                                 new AMQP.BasicProperties.Builder()
+                                         .contentType("application/json")
+                                         .build(),out.toByteArray());
                          Log.e("PUBLISH IN RABBIT","PUBLISH OK");
                     } catch (IOException e) {
                         e.printStackTrace();
