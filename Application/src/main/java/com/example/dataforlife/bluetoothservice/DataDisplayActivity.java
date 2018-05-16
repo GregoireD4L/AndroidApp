@@ -32,6 +32,7 @@ import com.example.dataforlife.display.DisplaySpO2Impl;
 import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
 import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
+import com.example.dataforlife.model.CustomMessage;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -197,7 +198,11 @@ public class DataDisplayActivity extends Activity {
 
                 //Connect to broker
                 //mMessageProducer.connectToRabbitMQ();
-                mMessageProducer.publishToRabbitMQ(intentData);
+                CustomMessage customMessage = new CustomMessage();
+                customMessage.setData(intentData);
+                customMessage.setId("1");
+
+                mMessageProducer.publishToRabbitMQ(customMessage);
 
 
                 if (mServiceSelected == 1){

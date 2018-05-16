@@ -44,9 +44,12 @@ dependencies {
     implementation 'com.jjoe64:graphview:4.2.1'
     implementation 'uk.me.berndporr:iirj:1.0'
     implementation 'com.android.support:multidex:1.0.3'
-    //implementation files('libs/amqp-client-5.2.0.jar')
-}
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.5.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.5.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
 
+
+}
 // The sample build uses multiple directories to
 // keep boilerplate and common code separate from
 // the main sample code.

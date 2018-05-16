@@ -50,6 +50,12 @@ import java.util.UUID;
  * communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
+
+
+/*
+    Regarder ici pour virer le code.
+
+ */
 public class DeviceControlActivity extends Activity {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
@@ -141,25 +147,6 @@ public class DeviceControlActivity extends Activity {
 
                         startDataAcquisition(mDeviceName, mDeviceAddress, serviceAddress, charAddress);
 
-
-                        //final int charaProp = characteristic.getProperties();
-                        //if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                            // If there is an active notification on a characteristic, clear
-                            // it first so it doesn't update the data field on the user interface.
-                            //if (mNotifyCharacteristic != null) {
-                                //mBluetoothLeService.setCharacteristicNotification(
-                                        //mNotifyCharacteristic, false);
-                                //mNotifyCharacteristic = null;
-                            //}
-                            //mBluetoothLeService.readCharacteristic(characteristic);
-                        //}
-                        //if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                            //mNotifyCharacteristic = characteristic;
-                            //mBluetoothLeService.setCharacteristicNotification(
-                                    //characteristic, true);
-                            //BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-                            //clientConfig.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        //}
                         return true;
                     }
                     return false;
@@ -201,8 +188,8 @@ public class DeviceControlActivity extends Activity {
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
 
-        getActionBar().setTitle(mDeviceName);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        //getActionBar().setTitle(mDeviceName);
+        //getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
@@ -277,6 +264,7 @@ public class DeviceControlActivity extends Activity {
     // Demonstrates how to iterate through the supported GATT Services/Characteristics.
     // In this sample, we populate the data structure that is bound to the ExpandableListView
     // on the UI.
+    // A regarder pour enlever les services en trop
     private void displayGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;
