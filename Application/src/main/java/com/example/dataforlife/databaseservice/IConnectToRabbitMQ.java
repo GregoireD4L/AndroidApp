@@ -56,7 +56,7 @@ public abstract class IConnectToRabbitMQ {
      */
     public boolean connectToRabbitMQ()
     {
-        if(mModel!= null && mModel.isOpen() )//already declared
+        if(mModel!= null && mModel.isOpen())
             return true;
         try
         {

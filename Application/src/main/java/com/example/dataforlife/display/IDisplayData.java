@@ -1,5 +1,7 @@
 package com.example.dataforlife.display;
 
+import android.util.Log;
+
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.visuals.SciChartSurface;
 
@@ -21,7 +23,11 @@ public interface IDisplayData{
     ArrayList<Double> displayData(String data, boolean isDataSave, int mChannelSelected, boolean isFilteringOn);
 
     default XyDataSeries clearGraph(XyDataSeries dataToClear){
-        dataToClear.removeRange(0, dataToClear.getCount());
+
+        Log.e("DISPLAY XYDATASERIES", "X =" +dataToClear.getXValues().size()+"      Y = "+ dataToClear.getYValues().size() );
+
+        //dataToClear.removeRange(0, dataToClear.getCount());
+        dataToClear.clear();
         return dataToClear;
     }
 }

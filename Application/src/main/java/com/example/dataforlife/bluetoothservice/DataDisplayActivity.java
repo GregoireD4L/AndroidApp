@@ -45,6 +45,7 @@ import java.io.File;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -201,9 +202,9 @@ public class DataDisplayActivity extends Activity {
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
+                customMessage.setTime(Instant.now());
 
                 mMessageProducer.publishToRabbitMQ(customMessage);
-
 
                 if (mServiceSelected == 1){
                     displayDataECG(intentData);
@@ -693,8 +694,6 @@ public class DataDisplayActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*if(mMessageProducer!= null)
-            mMessageProducer.connectToRabbitMQ();*/
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBTLeService != null) {
             final boolean result = mBTLeService.connect(mDeviceAddress);
@@ -713,8 +712,8 @@ public class DataDisplayActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       // if(mMessageProducer!=null)
-         //   mMessageProducer.dispose();
+       if(mMessageProducer!=null)
+           mMessageProducer.dispose();
         unbindService(mServiceConnection);
         mBTLeService = null;
     }

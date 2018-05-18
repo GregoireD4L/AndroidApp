@@ -29,19 +29,20 @@ public class MessageProducer extends IConnectToRabbitMQ {
         {
             @Override
             public void run() {
-                while(Running){
 
+                connectToRabbitMQ();
+                while(Running){
                     try {
-                         connectToRabbitMQ();
+
                          ObjectMapper mapper = new ObjectMapper();
                          ByteArrayOutputStream out = new ByteArrayOutputStream();
                          mapper.writeValue(out, message);
-                         Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
+                         //Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
                          mModel.basicPublish(mExchange, "influxData",
                                  new AMQP.BasicProperties.Builder()
                                          .contentType("application/json")
                                          .build(),out.toByteArray());
-                         Log.e("PUBLISH IN RABBIT","PUBLISH OK");
+                         //Log.e("PUBLISH IN RABBIT","PUBLISH OK");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
