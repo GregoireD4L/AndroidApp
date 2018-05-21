@@ -191,18 +191,13 @@ public class DataDisplayActivity extends Activity {
 
              String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 //lancer l'intentService d'influx db ici
-                //Intent dataService = new Intent(context, InfluxDbIntentService.class);
-                // dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
-                //startService(dataService);
-
-
 
                 //Connect to broker
                 //mMessageProducer.connectToRabbitMQ();
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
-                customMessage.setTime(Instant.now());
+                customMessage.setTime(Instant.now().toEpochMilli());
 
                 mMessageProducer.publishToRabbitMQ(customMessage);
 
