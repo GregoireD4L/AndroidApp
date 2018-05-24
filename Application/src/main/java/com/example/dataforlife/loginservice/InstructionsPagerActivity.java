@@ -10,6 +10,9 @@ import android.widget.Button;
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.DeviceScanActivity;
 
+/**
+ * Author Yousria
+ */
 public class InstructionsPagerActivity extends AppCompatActivity {
 
     @Override

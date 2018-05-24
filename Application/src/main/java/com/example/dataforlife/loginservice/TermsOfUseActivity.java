@@ -9,6 +9,9 @@ import android.widget.Button;
 import com.example.dataforlife.*;
 
 
+/**
+ * Author Yousria
+ */
 public class TermsOfUseActivity extends AppCompatActivity {
 
     @Override
@@ -21,6 +24,15 @@ public class TermsOfUseActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(TermsOfUseActivity.this, InstructionsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button back = (Button) findViewById(R.id.back_terms);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(TermsOfUseActivity.this, WelcomeActivity.class);
                 startActivity(intent);
             }
         });

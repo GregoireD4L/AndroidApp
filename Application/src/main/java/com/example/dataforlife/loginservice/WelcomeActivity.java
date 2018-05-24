@@ -7,7 +7,11 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.dataforlife.*;
+import com.example.dataforlife.pairservice.PairPagerActivity;
 
+/**
+ * Author Yousria
+ */
 public class WelcomeActivity extends AppCompatActivity {
 
     @Override
@@ -28,7 +32,7 @@ public class WelcomeActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
+                Intent intent = new Intent(WelcomeActivity.this, PairPagerActivity.class);
                 startActivity(intent);
             }
         });

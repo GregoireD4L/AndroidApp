@@ -9,6 +9,9 @@ import android.widget.Button;
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.DeviceScanActivity;
 
+/**
+ * Author Yousria
+ */
 public class InstructionsActivity extends AppCompatActivity {
 
     @Override
