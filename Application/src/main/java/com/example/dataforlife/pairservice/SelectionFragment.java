@@ -8,13 +8,13 @@ import android.view.ViewGroup;
 
 import com.example.dataforlife.R;
 
-public class PairedActivtity extends Fragment {
+public class SelectionFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(
-                R.layout.paired, container, false);
+                R.layout.listitem_device, container, false);
         ((PairPagerActivity)getActivity()).executeInsideFragment();
         return rootView;
     }

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import com.example.dataforlife.R;
 
-public class ActivationViewActivity extends Fragment {
+public class ActivationViewFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
