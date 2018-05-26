@@ -7,14 +7,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -27,13 +31,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dataforlife.R;
+import com.example.dataforlife.bluetoothservice.BluetoothLeService;
 import com.example.dataforlife.bluetoothservice.DeviceScanActivity;
+import com.example.dataforlife.loggedservices.WelcomeLoggedActivity;
 
 import java.util.ArrayList;
 
@@ -45,10 +54,13 @@ public class PairPagerActivity extends FragmentActivity {
 
 
     private final static String TAG = PairPagerActivity.class.getSimpleName();
+    private final static String TAG2 = PairedActivtity.class.getSimpleName();
     private DeviceListAdapter mDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
+    private BluetoothLeService mBluetoothLeService;
+
 
     private int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 455 ;
 
@@ -107,6 +119,7 @@ public class PairPagerActivity extends FragmentActivity {
     }
 
     public void executeInsideFragment() {
+        //first fragments
         if (mPager.getCurrentItem() == 0) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
@@ -157,10 +170,64 @@ public class PairPagerActivity extends FragmentActivity {
         }
         ListView listView = (ListView) findViewById(R.id.devices);
 
+        //second fragment
         if(mPager.getCurrentItem() == 1){
+            if (!mBluetoothAdapter.isEnabled()) {
+                if (!mBluetoothAdapter.isEnabled()) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                }
+            }
+
             mDeviceListAdapter = new DeviceListAdapter();
             listView.setAdapter(mDeviceListAdapter);
+            listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             scanLeDevice(true);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    final BluetoothDevice device = mDeviceListAdapter.getDevice(i);
+                    final String mDeviceAddress = device.getAddress();
+                    if (device == null) return;
+                    final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+                        @Override
+                        public void onServiceConnected(ComponentName componentName, IBinder service) {
+                            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+                            if (!mBluetoothLeService.initialize()) {
+                                Log.e(TAG, "Unable to initialize Bluetooth");
+                                finish();
+                            }
+                            // Automatically connects to the device upon successful start-up initialization.
+                            boolean connected = mBluetoothLeService.connect(mDeviceAddress);
+                            if(connected){
+                                mPager.setCurrentItem(2);
+                            }
+                            if(mBluetoothLeService == null) {
+                            }
+                        }
+
+                        @Override
+                        public void onServiceDisconnected(ComponentName componentName) {
+                            mBluetoothLeService = null;
+                        }
+                    };
+                }
+            });
+        }
+
+        //Third fragment
+        if(mPager.getCurrentItem() == 2){
+            ListView listView2 = (ListView) findViewById(R.id.devices_paired);
+            mDeviceListAdapter = new DeviceListAdapter();
+            listView2.setAdapter(mDeviceListAdapter);
+            listView2.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+            scanLeDevice(true);
+            //listView2.setSelection(i);
+            Intent intent = new Intent(PairPagerActivity.this, WelcomeLoggedActivity.class);
+            System.out.println("HHHHHHHHHHHHHHHHHHHHHHHH");
+            startActivity(intent);
         }
     }
 

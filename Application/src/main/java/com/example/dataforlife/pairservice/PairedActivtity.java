@@ -14,7 +14,7 @@ public class PairedActivtity extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(
-                R.layout.paired_view_pager, container, false);
+                R.layout.paired, container, false);
         ((PairPagerActivity)getActivity()).executeInsideFragment();
         return rootView;
     }
