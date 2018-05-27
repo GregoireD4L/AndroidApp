@@ -210,7 +210,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 } else {
                     displaySpO2(intentData);
                 }
-                surface.zoomExtents();
             }
         }
     };
@@ -351,6 +350,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
             mCompteur += 10;
+            surface.zoomExtents();
         }
     }
     private void displayDataAccelero(String data) {
@@ -362,7 +362,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             inertialDataX.append(20*mCompteur, dataList.get(0));
             inertialDataY.append(20*mCompteur, dataList.get(1));
             inertialDataZ.append(20*mCompteur, dataList.get(2));
-
+            surface.zoomExtents();
         }
     }
 
@@ -388,6 +388,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             } else {
                 wrongFrame = false;
             }
+            surface.zoomExtents();
         }
     }
     private void displayTemp(String data){
@@ -406,6 +407,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
             mCompteur += 1;
+            surface.zoomExtents();
         }
     }
 
@@ -421,11 +423,20 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     public void clearGraph() {
         if(mCompteur !=0){
             if(mServiceSelected == 1) {
-                ecgData = this.mDisplayEcgData.clearGraph(ecgData);
+                ecgData.clear();
+            } else if(mServiceSelected == 2){
+                inertialDataX.clear();
+                inertialDataY.clear();
+                inertialDataZ.clear();
+            } else if(mServiceSelected == 3){
+                respirationDataAbdo.clear();
+                respirationDataThorax.clear();
+            } else if(mServiceSelected == 4){
+                tempData.removeRange(0,tempData.getCount());
+            } else {
+                spo2Data.clear();
             }
             mCompteur = 0;
-        } else {
-            Toast.makeText(this, "Graph is already cleared", Toast.LENGTH_SHORT);
         }
     }
 
@@ -700,4 +711,5 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             mRecord.setText("Record");
         }
     }
+
 }
