@@ -494,11 +494,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         });
         // Initialisation des filtres ECG
 
-        mBtwFilterLow = new Butterworth();
-        mBtwFilterLow.lowPass(4,500,40);
-        mBtwFilterHigh = new Butterworth();
-        mBtwFilterHigh.highPass(2,500, 0.05);
-
         mCompteur = 0;
         mServiceSelected = 1;
         mChannelSelected = 1;
@@ -527,11 +522,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 }
             }
         });
-
         Intent gattServiceIntent = new Intent(WelcomeLoggedActivity.this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
-
     }
 
     public void executeInsideBreathingFragment(){
@@ -569,6 +561,18 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
+
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         mCompteur = 0;
         mServiceSelected = 2;
@@ -618,6 +622,19 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
+
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         mCompteur = 0;
         mServiceSelected = 3;
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
@@ -651,8 +668,22 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
+
+
         mCompteur = 0;
         mServiceSelected = 4;
+
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
@@ -687,6 +718,19 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
+
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         mCompteur = 0;
         mServiceSelected = 5;
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
