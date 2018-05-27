@@ -533,6 +533,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         surface = new SciChartSurface(this);
         newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        mChannelSelection =  findViewById(R.id.channel_selection);
         newGraph.addView(surface);
         SciChartBuilder.init(this);
         final SciChartBuilder builder = SciChartBuilder.instance();
@@ -562,6 +563,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
 
+        mChannel1 = (RadioButton) findViewById(R.id.channel1);
+        mChannel2 = (RadioButton) findViewById(R.id.channel2);
+        mChannel3 = (RadioButton) findViewById(R.id.channel3);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -576,6 +580,33 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mCompteur = 0;
         mServiceSelected = 2;
+        mChannelSelected = 1;
+        isFilteringOn = false;
+        isRecording = false;
+        isDataSave = false;
+
+        mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i == R.id.channel1){
+                    if(mChannelSelected !=1) {
+                        mChannelSelected = 1;
+                        clearGraph();
+                    }
+                } else if(i == R.id.channel2){
+                    if(mChannelSelected !=2) {
+                        mChannelSelected = 2;
+                        clearGraph();
+                    }
+                } else {
+                    if(mChannelSelected !=3) {
+                        mChannelSelected = 3;
+                        clearGraph();
+                    }
+                }
+            }
+        });
+
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
@@ -719,6 +750,10 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
 
+        mChannelSelection =  findViewById(R.id.channel_selection);
+        mChannel1 =  findViewById(R.id.channel1);
+        mChannel2 =  findViewById(R.id.channel2);
+        mChannel3 =  findViewById(R.id.channel3);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -733,6 +768,33 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mCompteur = 0;
         mServiceSelected = 5;
+        mChannelSelected = 1;
+        isFilteringOn = false;
+        isRecording = false;
+        isDataSave = false;
+
+        mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i == R.id.channel1){
+                    if(mChannelSelected !=1) {
+                        mChannelSelected = 1;
+                        clearGraph();
+                    }
+                } else if(i == R.id.channel2){
+                    if(mChannelSelected !=2) {
+                        mChannelSelected = 2;
+                        clearGraph();
+                    }
+                } else {
+                    if(mChannelSelected !=3) {
+                        mChannelSelected = 3;
+                        clearGraph();
+                    }
+                }
+            }
+        });
+
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
