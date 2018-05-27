@@ -7,11 +7,15 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -33,15 +37,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.BluetoothLeService;
+import com.example.dataforlife.bluetoothservice.DataDisplayActivity;
 import com.example.dataforlife.loggedservices.WelcomeLoggedActivity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Author Yousria
@@ -57,6 +64,25 @@ public class PairPagerActivity extends FragmentActivity {
     private boolean mScanning;
     private Handler mHandler;
     private BluetoothLeService mBluetoothLeService;
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    private static final String EXTRAS_CHAR_UUID = "CHAR_UUID";
+    private static final String EXTRAS_SERVICE_UUID = "SERVICE_UUID";
+
+    private Button mStopButton;
+    private TextView mConnectionState;
+    private TextView mDataField;
+    private String mDeviceName;
+    private String mDeviceAddress;
+    private ExpandableListView mGattServicesList;
+    private List<BluetoothGattService> services;
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
+    private boolean mConnected = false;
+    private BluetoothGattCharacteristic mNotifyCharacteristic;
+
+    private final String LIST_NAME = "NAME";
+    private final String LIST_UUID = "UUID";
 
 
     private int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 455 ;
@@ -81,7 +107,6 @@ public class PairPagerActivity extends FragmentActivity {
      */
     private PagerAdapter mPagerAdapter;
 
-    private String mDeviceAddress;
 
     final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -107,6 +132,35 @@ public class PairPagerActivity extends FragmentActivity {
         }
     };
 
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                services = mBluetoothLeService.getSupportedGattServices();
+                for (BluetoothGattService service : services) {
+                    List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+                    for (BluetoothGattCharacteristic characteristic : characteristics) {
+                        String uuid = characteristic.getUuid().toString();
+                        String serviceUuid = characteristic.getService().getUuid().toString();
+                        System.out.println(uuid);
+                        System.out.println(serviceUuid);
+                        if(uuid.equals("9ec813b4-256b-4090-93a8-a4f0e9107733") ||
+                                serviceUuid.equals("9ec813b4-256b-4090-93a8-a4f0e9107733")){
+                            startDataAcquisition(mDeviceName, mDeviceAddress, serviceUuid, uuid);
+                        }
+                    }
+                }
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                //displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +172,30 @@ public class PairPagerActivity extends FragmentActivity {
         mPager.setAdapter(mPagerAdapter);
         mHandler = new Handler();
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        //mBluetoothLeService = null;
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // User chose not to enable Bluetooth.
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
+            finish();
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void goToAnalytics(View v){
@@ -219,9 +297,11 @@ public class PairPagerActivity extends FragmentActivity {
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                         final BluetoothDevice device = mDeviceListAdapter.getDevice(i);
                         mDeviceAddress = device.getAddress();
+                        mDeviceName = device.getName();
                         if (device == null) return;
                         Intent gattServiceIntent = new Intent(PairPagerActivity.this, BluetoothLeService.class);
                         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+                        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
                         mPager.setCurrentItem(2);
                     }
                 });
@@ -357,5 +437,23 @@ public class PairPagerActivity extends FragmentActivity {
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    public void startDataAcquisition(String deviceName, String deviceAddress, String serviceAddress, String charAddress) {
+        final Intent intent = new Intent(this, WelcomeLoggedActivity.class);
+        intent.putExtra(EXTRAS_DEVICE_NAME, deviceName);
+        intent.putExtra(EXTRAS_DEVICE_ADDRESS, deviceAddress);
+        intent.putExtra(EXTRAS_SERVICE_UUID, serviceAddress);
+        intent.putExtra(EXTRAS_CHAR_UUID, charAddress);
+        startActivity(intent);
     }
 }
