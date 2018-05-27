@@ -535,11 +535,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideBreathingFragment(){
-        try {
-            record();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -583,11 +578,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideAcceleroFragment(){
-        try {
-            record();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -635,11 +625,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideTemperatureFragment(){
-        try {
-            record();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -674,11 +659,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideSpO2Fragment(){
-        try {
-            record();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
