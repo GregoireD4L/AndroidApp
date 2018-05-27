@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,6 +33,7 @@ import android.widget.Toast;
 
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.BluetoothLeService;
+import com.example.dataforlife.bluetoothservice.SampleGattAttributes;
 import com.example.dataforlife.databaseservice.MessageProducer;
 import com.example.dataforlife.display.DisplayDataAcceleroImpl;
 import com.example.dataforlife.display.DisplayEcgImpl;
@@ -50,6 +52,7 @@ import com.scichart.drawing.utility.ColorUtil;
 import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -457,6 +460,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         surface.getChartModifiers().add(modifier);
         // Application par défaut de la visualisation ECG
 
+
         surface.getRenderableSeries().add(ecgDataSeries);
         // Application par défaut des axes
 
@@ -472,6 +476,17 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mChannel1 = (RadioButton) findViewById(R.id.channel1);
         mChannel2 = (RadioButton) findViewById(R.id.channel2);
         mChannel3 = (RadioButton) findViewById(R.id.channel3);
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    record();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         // Initialisation des filtres ECG
 
         mBtwFilterLow = new Butterworth();
@@ -671,5 +686,24 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mServiceSelected = 5;
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+    }
+
+    public void record() throws IOException {
+        if(!isRecording){
+            mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
+            mBTLeService.setCharacteristicNotification(mNotifyCharacteristic, true);
+            BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            clientConfig.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mRecord.setText("Stop Recording");
+
+            isRecording = true;
+        } else {
+            mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
+            mBTLeService.setCharacteristicNotification(mNotifyCharacteristic, false);
+            BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+            clientConfig.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+            isRecording = false;
+            mRecord.setText("Record");
+        }
     }
 }
