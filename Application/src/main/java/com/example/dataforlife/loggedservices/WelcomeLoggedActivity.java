@@ -202,9 +202,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 if (mServiceSelected == 1){
                     displayDataECG(intentData);
                 } else if (mServiceSelected == 2){
-                    displayDataAccelero(intentData);
-                } else if (mServiceSelected == 3){
                     displayRespiration(intentData);
+                } else if (mServiceSelected == 3){
+                    displayDataAccelero(intentData);
                 }else if (mServiceSelected == 4){
                     displayTemp(intentData);
                 } else {
@@ -535,6 +535,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideBreathingFragment(){
+        try {
+            record();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -578,6 +583,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideAcceleroFragment(){
+        try {
+            record();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -625,6 +635,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideTemperatureFragment(){
+        try {
+            record();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
@@ -659,6 +674,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideSpO2Fragment(){
+        try {
+            record();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
