@@ -149,8 +149,8 @@ public class PairPagerActivity extends FragmentActivity {
                         String serviceUuid = characteristic.getService().getUuid().toString();
                         System.out.println(uuid);
                         System.out.println(serviceUuid);
-                        if(uuid.equals("9ec813b4-256b-4090-93a8-a4f0e9107733") ||
-                                serviceUuid.equals("9ec813b4-256b-4090-93a8-a4f0e9107733")){
+                        if(uuid.equals("0ab50002-c2ce-c4ab-e711-ce93701e73bc") ||
+                                serviceUuid.equals("0ab50002-c2ce-c4ab-e711-ce93701e73bc")){
                             startDataAcquisition(mDeviceName, mDeviceAddress, serviceUuid, uuid);
                         }
                     }
