@@ -350,7 +350,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
-            surface.zoomExtents();
             mCompteur += 10;
         }
     }
@@ -364,7 +363,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             inertialDataY.append(20*mCompteur, dataList.get(1));
             inertialDataZ.append(20*mCompteur, dataList.get(2));
 
-            surface.zoomExtents();
         }
     }
 
@@ -390,7 +388,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             } else {
                 wrongFrame = false;
             }
-            surface.zoomExtents();
         }
     }
     private void displayTemp(String data){
@@ -398,7 +395,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
             mCompteur += 1;
             tempData.append(20*mCompteur, 175.72*mDataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
-            surface.zoomExtents();
         }
     }
     private void displaySpO2(String data){
@@ -410,8 +406,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
             mCompteur += 1;
-            surface.zoomExtents();
-
         }
     }
 
