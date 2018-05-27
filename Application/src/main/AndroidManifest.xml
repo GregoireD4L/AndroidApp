@@ -57,6 +57,8 @@
         <activity android:name=".loginservice.WelcomeActivity"/>
         <activity android:name=".loginservice.InstructionsActivity"/>
         <activity android:name=".loginservice.InstructionsPagerActivity"/>
+        <activity android:name=".pairservice.PairPagerActivity"/>
+        <activity android:name=".loggedservices.WelcomeLoggedActivity"/>
         <activity
             android:name=".bluetoothservice.DeviceScanActivity"
             android:label="@string/app_name"

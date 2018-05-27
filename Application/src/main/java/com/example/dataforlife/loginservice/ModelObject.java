@@ -2,6 +2,9 @@ package com.example.dataforlife.loginservice;
 
 import com.example.dataforlife.R;
 
+/**
+ * Author Yousria
+ */
 public enum ModelObject {
 
     BLUETOOTH(R.string.agree, R.layout.bluetooth_view_pager),

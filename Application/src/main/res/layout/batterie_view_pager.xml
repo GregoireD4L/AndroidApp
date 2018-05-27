@@ -16,9 +16,16 @@
         android:layout_height="wrap_content"
         android:text="@string/batterie_instructions"
         android:layout_gravity="center"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:textSize="@dimen/margin_medium"
         android:textColor="@color/text_color_primary"/>
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/pager2"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"/>
 
 </LinearLayout>
