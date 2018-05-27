@@ -15,4 +15,13 @@
         android:id="@+id/newGraph">
     </LinearLayout>
 
+    <android.support.v7.widget.AppCompatButton
+        android:layout_width="220dp"
+        android:id="@+id/record_button"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Record"
+        android:textColor="@color/accent_material_light"
+        android:background="@drawable/mybutton_standard"/>
+
 </LinearLayout>
