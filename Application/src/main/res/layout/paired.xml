@@ -35,26 +35,15 @@
         android:layout_gravity="center"
         android:src="@drawable/paired_t_shirt" />
 
-    <FrameLayout
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/go_to_analytics"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:id="@+id/items">
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/devices_paired">
-        </ListView>
-
-        <TextView android:id="@+id/device_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textColor="@color/text_color_primary"/>
-        <TextView android:id="@+id/device_address"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="@color/text_color_primary"/>
-    </FrameLayout>
+        android:layout_marginTop="30dp"
+        android:layout_gravity="center"
+        android:text="Go to analytics"
+        android:onClick="goToAnalytics"
+        android:textColor="@color/accent_material_light"
+        android:background="@drawable/mybutton_standard"/>
 </LinearLayout>
 

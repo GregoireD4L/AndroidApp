@@ -22,12 +22,6 @@
             android:minHeight="@dimen/margin_huge"
             android:paddingStart="@dimen/margin_medium">
 
-            <android.support.v7.widget.AppCompatImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_launcher"
-                android:layout_marginEnd="@dimen/margin_medium"/>
-
         </android.support.v7.widget.Toolbar>
     </FrameLayout>
 
@@ -37,7 +31,9 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:fitsSystemWindows="true" />
+        android:fitsSystemWindows="true"
+        app:menu="@menu/drawer_view"
+        app:headerLayout="@layout/nav_header" />
 
 
 

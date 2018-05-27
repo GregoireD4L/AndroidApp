@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,7 +95,7 @@ public class PairPagerActivity extends FragmentActivity {
             // Automatically connects to the device upon successful start-up initialization.
             boolean connected = mBluetoothLeService.connect(mDeviceAddress);
             if(connected){
-                mPager.setCurrentItem(2);
+                Toast.makeText(PairPagerActivity.this, "Bluetooth connected", Toast.LENGTH_SHORT).show();
             }
             if(mBluetoothLeService == null) {
             }
@@ -117,6 +118,12 @@ public class PairPagerActivity extends FragmentActivity {
         mPager.setAdapter(mPagerAdapter);
         mHandler = new Handler();
 
+    }
+
+    public void goToAnalytics(View v){
+        scanLeDevice(false);
+        Intent intent = new Intent(PairPagerActivity.this, WelcomeLoggedActivity.class);
+        startActivity(intent);
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -142,89 +149,83 @@ public class PairPagerActivity extends FragmentActivity {
 
     public void executeInsideFragment() {
         //first fragments
-        if (mPager.getCurrentItem() == 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-            }
-            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
-                finish();
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Getting permission", Toast.LENGTH_SHORT);
-                Log.e(TAG, "Getting permission");
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    final Activity myActivity = this;
-                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                    alertBuilder.setCancelable(true);
-                    alertBuilder.setMessage("Write external storage permission is necessary to write event!!!");
-                    alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-                        public void onClick(DialogInterface dialog, int which) {
-                            ActivityCompat.requestPermissions(myActivity, new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-                        }
-                    });
-                } else {
-
-                    Log.e(TAG, "Getting permission easy");
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        switch (mPager.getCurrentItem()){
+            case 0:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
                 }
-            }
-            final BluetoothManager bluetoothManager =
-                    (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-            mBluetoothAdapter = bluetoothManager.getAdapter();
+                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                    Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Getting permission", Toast.LENGTH_SHORT);
+                    Log.e(TAG, "Getting permission");
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        final Activity myActivity = this;
+                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                        alertBuilder.setCancelable(true);
+                        alertBuilder.setMessage("Write external storage permission is necessary to write event!!!");
+                        alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                            public void onClick(DialogInterface dialog, int which) {
+                                ActivityCompat.requestPermissions(myActivity, new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                            }
+                        });
+                    } else {
 
-            // Checks if Bluetooth is supported on the device.
-            if (mBluetoothAdapter == null) {
-                Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
-                finish();
-                return;
-            }
-            if (!mBluetoothAdapter.isEnabled()) {
+                        Log.e(TAG, "Getting permission easy");
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    }
+                }
+                final BluetoothManager bluetoothManager =
+                        (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                mBluetoothAdapter = bluetoothManager.getAdapter();
+
+                // Checks if Bluetooth is supported on the device.
+                if (mBluetoothAdapter == null) {
+                    Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
                 if (!mBluetoothAdapter.isEnabled()) {
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }
                 }
-            }
-        }
-        ListView listView = (ListView) findViewById(R.id.devices);
+                break;
 
-        //second fragment
-        if(mPager.getCurrentItem() == 1){
-            if (!mBluetoothAdapter.isEnabled()) {
+                //second fragment
+            case 1:
+                ListView listView = (ListView) findViewById(R.id.devices);
                 if (!mBluetoothAdapter.isEnabled()) {
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }
                 }
-            }
 
-            mDeviceListAdapter = new DeviceListAdapter();
-            listView.setAdapter(mDeviceListAdapter);
-            listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-            scanLeDevice(true);
+                mDeviceListAdapter = new DeviceListAdapter();
+                listView.setAdapter(mDeviceListAdapter);
+                listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                scanLeDevice(true);
 
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    final BluetoothDevice device = mDeviceListAdapter.getDevice(i);
-                    mDeviceAddress = device.getAddress();
-                    if (device == null) return;
-                    Intent gattServiceIntent = new Intent(PairPagerActivity.this, BluetoothLeService.class);
-                    bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-                }
-            });
-        }
-
-        //Third fragment
-        if(mPager.getCurrentItem() == 2){
-            scanLeDevice(false);
-            //listView2.setSelection(i);
-            Intent intent = new Intent(PairPagerActivity.this, WelcomeLoggedActivity.class);
-            System.out.println("HHHHHHHHHHHHHHHHHHHHHHHH");
-            startActivity(intent);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        final BluetoothDevice device = mDeviceListAdapter.getDevice(i);
+                        mDeviceAddress = device.getAddress();
+                        if (device == null) return;
+                        Intent gattServiceIntent = new Intent(PairPagerActivity.this, BluetoothLeService.class);
+                        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+                        mPager.setCurrentItem(2);
+                    }
+                });
+                break;
         }
     }
 

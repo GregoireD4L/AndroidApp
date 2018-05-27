@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_ecg"
+
+            android:title="ECG" />
+        <item
+            android:id="@+id/nav_breathing"
+            android:title="Breathing" />
+        <item
+            android:id="@+id/nav_spo2"
+            android:title="SpO2" />
+        <item
+            android:id="@+id/nav_temperature"
+            android:title="Temperature" />
+        <item
+            android:id="@+id/nav_activity"
+            android:title="Activity" />
+        <item
+            android:id="@+id/nav_recordings"
+            android:title="Recordings" />
+
+        <item
+            android:id="@+id/nav_parametres"
+            android:title="Parameters" />
+    </group>
+
+</menu>
