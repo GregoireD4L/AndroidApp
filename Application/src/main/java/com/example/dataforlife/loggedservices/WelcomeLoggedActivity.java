@@ -40,6 +40,7 @@ import com.example.dataforlife.display.DisplaySpO2Impl;
 import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
 import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
+import com.example.dataforlife.model.CustomMessage;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -49,6 +50,7 @@ import com.scichart.drawing.utility.ColorUtil;
 import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.io.FileOutputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
@@ -186,7 +188,14 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 //nothing
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                mMessageProducer.publishToRabbitMQ(intentData);
+                //Connect to broker
+
+                CustomMessage customMessage = new CustomMessage();
+                customMessage.setData(intentData);
+                customMessage.setId("1");
+                customMessage.setTime(Instant.now().toEpochMilli());
+
+                mMessageProducer.publishToRabbitMQ(customMessage);
                 if (mServiceSelected == 1){
                     displayDataECG(intentData);
                 } else if (mServiceSelected == 2){
@@ -198,6 +207,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 } else {
                     displaySpO2(intentData);
                 }
+                surface.zoomExtents();
             }
         }
     };
