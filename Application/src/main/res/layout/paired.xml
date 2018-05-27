@@ -35,15 +35,5 @@
         android:layout_gravity="center"
         android:src="@drawable/paired_t_shirt" />
 
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/go_to_analytics"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_gravity="center"
-        android:text="Go to analytics"
-        android:onClick="goToAnalytics"
-        android:textColor="@color/accent_material_light"
-        android:background="@drawable/mybutton_standard"/>
 </LinearLayout>
 

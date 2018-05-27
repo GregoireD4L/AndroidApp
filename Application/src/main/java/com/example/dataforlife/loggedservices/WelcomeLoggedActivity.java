@@ -33,8 +33,13 @@ import android.widget.Toast;
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.BluetoothLeService;
 import com.example.dataforlife.databaseservice.MessageProducer;
+import com.example.dataforlife.display.DisplayDataAcceleroImpl;
 import com.example.dataforlife.display.DisplayEcgImpl;
+import com.example.dataforlife.display.DisplayRespirationImpl;
+import com.example.dataforlife.display.DisplaySpO2Impl;
+import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
+import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -80,8 +85,22 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private SciChartSurface surface;
 
     private XyDataSeries ecgData;
+    private XyDataSeries inertialDataX;
+    private XyDataSeries inertialDataY;
+    private XyDataSeries inertialDataZ;
+    private XyDataSeries respirationDataThorax;
+    private XyDataSeries respirationDataAbdo;
+    private XyDataSeries tempData;
+    private XyDataSeries spo2Data;
 
     private IRenderableSeries ecgDataSeries;
+    private IRenderableSeries inertialDataXSeries;
+    private IRenderableSeries inertialDataYSeries;
+    private IRenderableSeries inertialDataZSeries;
+    private IRenderableSeries respirationDataThoraxSeries;
+    private IRenderableSeries respirationDataAbdoSeries;
+    private IRenderableSeries tempDataSeries;
+    private IRenderableSeries spo2DataSeries;
 
     // Objet de sauvegarde des données
     private FileOutputStream outputStream;
@@ -120,7 +139,15 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // RABITTMQServices
     private MessageProducer mMessageProducer = null;
 
+
+    // classe de display
+
     private IDisplayData mDisplayEcgData = new DisplayEcgImpl();
+    private IDisplayDataWithMultipleDataSeries mDataAccelero = new DisplayDataAcceleroImpl();
+    private IDisplayDataWithMultipleDataSeries mDataRespiration = new DisplayRespirationImpl();
+    private IDisplayDataWithMultipleDataSeries mDataTempArray = new DisplayTempImpl();
+    private IDisplayData mDisplayspo2Data = new DisplaySpO2Impl();
+
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -156,21 +183,21 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 mConnected = false;
                 Log.e(TAG, "Déco");
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-
+                //nothing
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-
                 String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                //lancer l'intentService d'influx db ici
-                //Intent dataService = new Intent(context, InfluxDbIntentService.class);
-                // dataService.putExtra(BluetoothLeService.EXTRA_DATA,intentData);
-                //startService(dataService);
-
-
-
-                //Connect to broker
-                //mMessageProducer.connectToRabbitMQ();
                 mMessageProducer.publishToRabbitMQ(intentData);
-                displayDataECG(intentData);
+                if (mServiceSelected == 1){
+                    displayDataECG(intentData);
+                } else if (mServiceSelected == 2){
+                    displayDataAccelero(intentData);
+                } else if (mServiceSelected == 3){
+                    displayRespiration(intentData);
+                }else if (mServiceSelected == 4){
+                    displayTemp(intentData);
+                } else {
+                    displaySpO2(intentData);
+                }
             }
         }
     };
@@ -199,7 +226,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // set item as selected to persist highlight
+
                         if(menuItem.getTitle().toString().equals("ECG")){
                             menuItem.setChecked(true);
                             // close drawer when item is tapped
@@ -207,13 +234,59 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                             //start fragment
                             FragmentManager manager = getFragmentManager();
                             FragmentTransaction transaction = manager.beginTransaction();
-                            transaction.add(R.id.content_frame, new ECGFragment(), ECGFragment.class.getSimpleName());
+                            transaction.replace(R.id.content_frame, new ECGFragment());
                             transaction.addToBackStack(null);
                             transaction.commit();
                         }
 
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("BREATHING")){
+                            menuItem.setChecked(true);
+                            // close drawer when item is tapped
+                            mDrawerLayout.closeDrawers();
+                            //start fragment
+                            FragmentManager manager = getFragmentManager();
+                            FragmentTransaction transaction = manager.beginTransaction();
+                            transaction.replace(R.id.content_frame, new BreathingFragment());
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("ACCELERO")){
+                            menuItem.setChecked(true);
+                            // close drawer when item is tapped
+                            mDrawerLayout.closeDrawers();
+                            //start fragment
+                            FragmentManager manager = getFragmentManager();
+                            FragmentTransaction transaction = manager.beginTransaction();
+                            transaction.replace(R.id.content_frame, new AcceleroFragment());
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("TEMPERATURE")){
+                            menuItem.setChecked(true);
+                            // close drawer when item is tapped
+                            mDrawerLayout.closeDrawers();
+                            //start fragment
+                            FragmentManager manager = getFragmentManager();
+                            FragmentTransaction transaction = manager.beginTransaction();
+                            transaction.replace(R.id.content_frame, new TemperatureFragment());
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("SPO2")){
+                            menuItem.setChecked(true);
+                            // close drawer when item is tapped
+                            mDrawerLayout.closeDrawers();
+                            //start fragment
+                            FragmentManager manager = getFragmentManager();
+                            FragmentTransaction transaction = manager.beginTransaction();
+                            transaction.replace(R.id.content_frame, new SpO2Fragment());
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+
 
                         return true;
                     }
@@ -229,6 +302,34 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /*if(mMessageProducer!= null)
+            mMessageProducer.connectToRabbitMQ();*/
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBTLeService != null) {
+            final boolean result = mBTLeService.connect(mDeviceAddress);
+            Log.e(TAG, "Connect request result=" + result);
+        }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //if(mMessageProducer!=null)
+        //  mMessageProducer.dispose();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // if(mMessageProducer!=null)
+        //   mMessageProducer.dispose();
+        unbindService(mServiceConnection);
+        mBTLeService = null;
+    }
+
     private void displayDataECG(String data) {
 
         if (data != null) {
@@ -238,6 +339,66 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             }
             surface.zoomExtents();
             mCompteur += 10;
+        }
+    }
+    private void displayDataAccelero(String data) {
+        if (data != null) {
+
+            ArrayList<Double> dataList =  mDataAccelero.displayData(data,mChannelSelected);
+
+            mCompteur += 1;
+            inertialDataX.append(20*mCompteur, dataList.get(0));
+            inertialDataY.append(20*mCompteur, dataList.get(1));
+            inertialDataZ.append(20*mCompteur, dataList.get(2));
+
+            surface.zoomExtents();
+        }
+    }
+
+    private void displayRespiration(String data){
+        if (data != null){
+
+
+            ArrayList<Double> dataList = mDataRespiration.displayData(data,mChannelSelected);
+            mCompteur += 1;
+
+            Double dataDecodedT = dataList.get(0);
+            Double dataDecodedA = dataList.get(1);
+
+            respirationDataThorax.append(20*mCompteur, dataDecodedT);
+            respirationDataAbdo.append(20*mCompteur,dataDecodedA);
+
+            /*if (wrongFrame) {
+                Log.e(TAG, dataDecoded);
+            }*/
+            if (dataDecodedA > 1023){
+                //Log.e(TAG, dataDecoded);
+                wrongFrame = true;
+            } else {
+                wrongFrame = false;
+            }
+            surface.zoomExtents();
+        }
+    }
+    private void displayTemp(String data){
+        if (data != null){
+
+            mCompteur += 1;
+            tempData.append(20*mCompteur, 175.72*mDataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
+            surface.zoomExtents();
+        }
+    }
+    private void displaySpO2(String data){
+
+        if (data != null) {
+
+            ArrayList<Double>  dataToAddToDataSeries = mDisplayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
+            for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
+                ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
+            }
+            mCompteur += 1;
+            surface.zoomExtents();
+
         }
     }
 
@@ -341,5 +502,164 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
 
+    }
+
+    public void executeInsideBreathingFragment(){
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "fanout");
+
+        surface = new SciChartSurface(this);
+        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph.addView(surface);
+        SciChartBuilder.init(this);
+        final SciChartBuilder builder = SciChartBuilder.instance();
+
+        respirationDataThorax = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        respirationDataThoraxSeries = builder.newLineSeries()
+                .withDataSeries(respirationDataThorax)
+                .withStrokeStyle(ColorUtil.LightBlue, 2f, true)
+                .build();
+
+        respirationDataAbdo = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        respirationDataAbdoSeries = builder.newLineSeries()
+                .withDataSeries(respirationDataAbdo)
+                .withStrokeStyle(ColorUtil.LimeGreen, 2f, true)
+                .build();
+
+        ModifierGroup modifier = builder.newModifierGroup()
+                .withPinchZoomModifier().build()
+                .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .build();
+
+        surface.getChartModifiers().add(modifier);
+        final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
+        final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
+
+        Collections.addAll(surface.getYAxes(), yAxis);
+        Collections.addAll(surface.getXAxes(), xAxis);
+
+        mCompteur = 0;
+        mServiceSelected = 2;
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+    }
+
+    public void executeInsideAcceleroFragment(){
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "fanout");
+
+        surface = new SciChartSurface(this);
+        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph.addView(surface);
+        SciChartBuilder.init(this);
+        final SciChartBuilder builder = SciChartBuilder.instance();
+        inertialDataX  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataXSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataX)
+                .withStrokeStyle(ColorUtil.LimeGreen, 2f, true)
+                .build();
+
+        inertialDataY  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataYSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataY)
+                .withStrokeStyle(ColorUtil.LightBlue, 2f, true)
+                .build();
+
+        inertialDataZ  = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(350).build();
+        inertialDataZSeries  = builder.newLineSeries()
+                .withDataSeries(inertialDataZ)
+                .withStrokeStyle(ColorUtil.Red, 2f, true)
+                .build();
+        ModifierGroup modifier = builder.newModifierGroup()
+                .withPinchZoomModifier().build()
+                .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .build();
+
+        surface.getChartModifiers().add(modifier);
+        // Application par défaut des axes
+
+        final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
+        final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
+
+        Collections.addAll(surface.getYAxes(), yAxis);
+        Collections.addAll(surface.getXAxes(), xAxis);
+        mCompteur = 0;
+        mServiceSelected = 3;
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+    }
+
+    public void executeInsideTemperatureFragment(){
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "fanout");
+
+        surface = new SciChartSurface(this);
+        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph.addView(surface);
+        SciChartBuilder.init(this);
+        final SciChartBuilder builder = SciChartBuilder.instance();
+        tempData = builder.newXyDataSeries(Integer.class,Double.class).withFifoCapacity(350).build();
+        tempDataSeries = builder.newLineSeries()
+                .withDataSeries(tempData)
+                .withStrokeStyle(ColorUtil.Red,2f,true)
+                .build();
+        ModifierGroup modifier = builder.newModifierGroup()
+                .withPinchZoomModifier().build()
+                .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .build();
+
+        surface.getChartModifiers().add(modifier);
+        final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
+        final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
+
+        Collections.addAll(surface.getYAxes(), yAxis);
+        Collections.addAll(surface.getXAxes(), xAxis);
+        mCompteur = 0;
+        mServiceSelected = 4;
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+    }
+
+    public void executeInsideSpO2Fragment(){
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "fanout");
+
+        surface = new SciChartSurface(this);
+        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph.addView(surface);
+        SciChartBuilder.init(this);
+        final SciChartBuilder builder = SciChartBuilder.instance();
+        spo2Data = builder.newXyDataSeries(Integer.class, Double.class).withFifoCapacity(700).build();
+        spo2DataSeries = builder.newLineSeries()
+                .withDataSeries(spo2Data)
+                .withStrokeStyle(ColorUtil.Red, 2f, true)
+                .build();
+
+
+        ModifierGroup modifier = builder.newModifierGroup()
+                .withPinchZoomModifier().build()
+                .withZoomPanModifier().withReceiveHandledEvents(true).build()
+                .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
+                .build();
+
+        surface.getChartModifiers().add(modifier);
+        final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
+        final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
+
+        Collections.addAll(surface.getYAxes(), yAxis);
+        Collections.addAll(surface.getXAxes(), xAxis);
+        mCompteur = 0;
+        mServiceSelected = 5;
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
 }

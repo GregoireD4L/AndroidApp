@@ -10,6 +10,10 @@
             android:id="@+id/nav_breathing"
             android:title="Breathing" />
         <item
+            android:id="@+id/nav_accelero"
+            android:title="Accelero" />
+
+        <item
             android:id="@+id/nav_spo2"
             android:title="SpO2" />
         <item

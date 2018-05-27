@@ -8,20 +8,19 @@ import android.view.ViewGroup;
 
 import com.example.dataforlife.R;
 
-public class ECGFragment extends Fragment {
-
+public class AcceleroFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(
-                R.layout.ecg_view, container, false);
+                R.layout.accelero_view, container, false);
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((WelcomeLoggedActivity) getActivity()).executeInsideEcgFragment();
+        ((WelcomeLoggedActivity) getActivity()).executeInsideAcceleroFragment();
     }
 }
