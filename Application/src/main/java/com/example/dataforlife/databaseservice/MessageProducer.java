@@ -30,10 +30,10 @@ public class MessageProducer extends IConnectToRabbitMQ {
             @Override
             public void run() {
 
-                connectToRabbitMQ();
                 while(Running){
-                    try {
 
+                    try {
+                         connectToRabbitMQ();
                          ObjectMapper mapper = new ObjectMapper();
                          ByteArrayOutputStream out = new ByteArrayOutputStream();
                          mapper.writeValue(out, message);
@@ -46,7 +46,6 @@ public class MessageProducer extends IConnectToRabbitMQ {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
 
@@ -54,7 +53,4 @@ public class MessageProducer extends IConnectToRabbitMQ {
         thread.start();
     }
 
-    public void dispose(){
-        Running = false;
-    }
 }

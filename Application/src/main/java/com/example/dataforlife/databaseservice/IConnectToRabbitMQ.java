@@ -18,7 +18,7 @@ public abstract class IConnectToRabbitMQ {
     protected Channel mModel = null;
     protected Connection mConnection;
 
-    protected boolean Running = true;
+    protected boolean Running;
 
     protected  String MyExchangeType ;
 
@@ -33,6 +33,7 @@ public abstract class IConnectToRabbitMQ {
         mServer = server;
         mExchange = exchange;
         MyExchangeType = exchangeType;
+        Running = true;
     }
     public void Dispose()
     {
@@ -56,7 +57,7 @@ public abstract class IConnectToRabbitMQ {
      */
     public boolean connectToRabbitMQ()
     {
-        if(mModel!= null && mModel.isOpen())
+        if(mModel!= null && mModel.isOpen() && mConnection.isOpen())
             return true;
         try
         {
@@ -66,7 +67,6 @@ public abstract class IConnectToRabbitMQ {
             connectionFactory.setVirtualHost("myvhost");
             connectionFactory.setPort(5672);
             connectionFactory.setHost(mServer);
-
 
             mConnection = connectionFactory.newConnection();
             mModel = mConnection.createChannel();

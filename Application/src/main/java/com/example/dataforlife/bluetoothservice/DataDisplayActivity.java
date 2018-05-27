@@ -96,8 +96,6 @@ public class DataDisplayActivity extends Activity {
     private IRenderableSeries tempDataSeries;
     private IRenderableSeries spo2DataSeries;
 
-    // Objet de sauvegarde des données
-    private FileOutputStream outputStream;
 
     // Objets view
     private RadioGroup mServiceSelection;
@@ -118,9 +116,6 @@ public class DataDisplayActivity extends Activity {
     private BluetoothGattCharacteristic mNotifyCharacteristic;
     private boolean mConnected = false;
 
-    // Filtres
-    private Butterworth mBtwFilterLow;
-    private Butterworth mBtwFilterHigh;
 
     // Clé de l'intent
     private static final String EXTRAS_DEVICE_NAME = "NAME";
@@ -182,7 +177,6 @@ public class DataDisplayActivity extends Activity {
                 mConnected = false;
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
-                clearUI();
                 Log.e(TAG, "Déco");
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
@@ -191,9 +185,8 @@ public class DataDisplayActivity extends Activity {
 
              String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 //lancer l'intentService d'influx db ici
-
                 //Connect to broker
-                //mMessageProducer.connectToRabbitMQ();
+
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
@@ -212,6 +205,7 @@ public class DataDisplayActivity extends Activity {
                 } else {
                     displaySpO2(intentData);
                 }
+                surface.zoomExtents();
             }
         }
     };
@@ -318,46 +312,18 @@ public class DataDisplayActivity extends Activity {
 
         // Initialisation des objets view
 
-        mBTStatus = (TextView) findViewById(R.id.bt_status);
-        mCharText = (TextView) findViewById(R.id.char_value);
-        mServiceSelection = (RadioGroup) findViewById(R.id.service_selection);
-        mRecord = (Button) findViewById(R.id.record_button);
-        mClearGraph = (Button) findViewById(R.id.clear_graph);
-        mChannelSelection = (RadioGroup) findViewById(R.id.channel_selection);
-        mChannel1 = (RadioButton) findViewById(R.id.channel1);
-        mChannel2 = (RadioButton) findViewById(R.id.channel2);
-        mChannel3 = (RadioButton) findViewById(R.id.channel3);
-        mSaveData = (CheckBox) findViewById(R.id.saveData);
-        mFilterOn = (CheckBox) findViewById(R.id.filterOn);
+        mBTStatus = findViewById(R.id.bt_status);
+        mCharText = findViewById(R.id.char_value);
+        mServiceSelection = findViewById(R.id.service_selection);
+        mRecord = findViewById(R.id.record_button);
+        mClearGraph = findViewById(R.id.clear_graph);
+        mChannelSelection =  findViewById(R.id.channel_selection);
+        mChannel1 =  findViewById(R.id.channel1);
+        mChannel2 =  findViewById(R.id.channel2);
+        mChannel3 =  findViewById(R.id.channel3);
+        mSaveData =  findViewById(R.id.saveData);
+        mFilterOn =  findViewById(R.id.filterOn);
 
-        // Initialisation des filtres ECG
-
-        mBtwFilterLow = new Butterworth();
-        mBtwFilterLow.lowPass(4,500,40);
-        mBtwFilterHigh = new Butterworth();
-        mBtwFilterHigh.highPass(2,500, 0.05);
-
-        // Initialisation des objets pour écriture dans le stockage externe
-
-        File root = Environment.getExternalStorageDirectory();
-        File file = null;
-
-        if (root.canWrite()) {
-            File dir = new File(root.getAbsolutePath() + "/Log_ECG_app");
-            dir.mkdirs();
-            file = new File(dir,Calendar.getInstance().getTime().toString().replace(":", "") + ".csv");
-            try {
-                outputStream = new FileOutputStream(file);
-                Log.e(TAG,root.getAbsolutePath());
-            } catch (IOException e) {
-                Log.e(TAG,"Fail to open file");
-            }
-
-            Log.e(TAG,root.getAbsolutePath());
-        } else {
-            Log.e(TAG,"root is not writable");
-
-        }
 
         // Initialisation du compteur et des données par défaut
 
@@ -708,9 +674,10 @@ public class DataDisplayActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
        if(mMessageProducer!=null)
-           mMessageProducer.dispose();
+           mMessageProducer.Dispose();
         unbindService(mServiceConnection);
         mBTLeService = null;
+
     }
 
 
@@ -731,7 +698,6 @@ public class DataDisplayActivity extends Activity {
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
-            surface.zoomExtents();
             mCompteur += 10;
         }
     }
@@ -746,7 +712,6 @@ public class DataDisplayActivity extends Activity {
             inertialDataY.append(20*mCompteur, dataList.get(1));
             inertialDataZ.append(20*mCompteur, dataList.get(2));
 
-            surface.zoomExtents();
         }
     };
 
@@ -763,16 +728,11 @@ public class DataDisplayActivity extends Activity {
             respirationDataThorax.append(20*mCompteur, dataDecodedT);
             respirationDataAbdo.append(20*mCompteur,dataDecodedA);
 
-            /*if (wrongFrame) {
-                Log.e(TAG, dataDecoded);
-            }*/
             if (dataDecodedA > 1023){
-                //Log.e(TAG, dataDecoded);
                 wrongFrame = true;
             } else {
                 wrongFrame = false;
             }
-            surface.zoomExtents();
         }
     }
 
@@ -781,7 +741,6 @@ public class DataDisplayActivity extends Activity {
 
             mCompteur += 1;
             tempData.append(20*mCompteur, 175.72*mDataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
-            surface.zoomExtents();
         }
     }
 
@@ -794,13 +753,9 @@ public class DataDisplayActivity extends Activity {
                 ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
             mCompteur += 1;
-            surface.zoomExtents();
-
         }
     }
 
-    private void clearUI() {
-    }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -826,7 +781,6 @@ public class DataDisplayActivity extends Activity {
             BluetoothGattDescriptor clientConfig = mNotifyCharacteristic.getDescriptor(UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             clientConfig.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
             isRecording = false;
-            //Toast.makeText(this, outputStream.getFD().toString(), Toast.LENGTH_SHORT);
             mRecord.setText("Record");
         }
     }
@@ -834,22 +788,20 @@ public class DataDisplayActivity extends Activity {
     public void clearGraph() {
         if(mCompteur !=0){
             if(mServiceSelected == 1) {
-                ecgData = this.mDisplayEcgData.clearGraph(ecgData);
+                ecgData.clear();
             } else if(mServiceSelected == 2){
-                inertialDataX.removeRange(0, inertialDataX.getCount());
-                inertialDataY.removeRange(0, inertialDataY.getCount());
-                inertialDataZ.removeRange(0, inertialDataZ.getCount());
+                inertialDataX.clear();
+                inertialDataY.clear();
+                inertialDataZ.clear();
             } else if(mServiceSelected == 3){
-                respirationDataAbdo.removeRange(0, respirationDataAbdo.getCount());
-                respirationDataThorax.removeRange(0,respirationDataThorax.getCount());
+                respirationDataAbdo.clear();
+                respirationDataThorax.clear();
             } else if(mServiceSelected == 4){
                 tempData.removeRange(0,tempData.getCount());
             } else {
-                spo2Data = this.mDisplayspo2Data.clearGraph(spo2Data);
+                spo2Data.clear();
             }
             mCompteur = 0;
-        } else {
-            Toast.makeText(this, "Graph is already cleared", Toast.LENGTH_SHORT);
         }
     }
 
