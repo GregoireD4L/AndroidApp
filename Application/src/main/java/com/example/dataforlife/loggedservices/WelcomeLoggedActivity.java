@@ -211,12 +211,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
 
 
-                trameBuffer.add(customMessage);
-                if(trameBuffer.size() == 1){
-                    List<CustomMessage> messageToSend = trameBuffer;
-                    mMessageProducer.publishToRabbitMQ(messageToSend);
-                    trameBuffer.clear();
-                }
+                //trameBuffer.add(customMessage);
+                mMessageProducer.publishToRabbitMQ(customMessage);
+
 
 
 

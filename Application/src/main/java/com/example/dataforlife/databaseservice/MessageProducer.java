@@ -31,7 +31,7 @@ public class MessageProducer extends IConnectToRabbitMQ {
         super(server, exchange, exchangeType);
     }
 
-    synchronized public void publishToRabbitMQ(List<CustomMessage> messageProducerBuffer){
+    synchronized public void publishToRabbitMQ(CustomMessage messageProducerBuffer){
 
             Thread thread = new Thread()
             {
@@ -40,22 +40,22 @@ public class MessageProducer extends IConnectToRabbitMQ {
 
                         try {
                             connectToRabbitMQ();
-                            List<CustomMessage> messageToSend = messageProducerBuffer;
-                            Lock lock = new ReentrantLock();
-                            lock.lock();
-                            for(CustomMessage customMessage : messageToSend){
+                            //List<CustomMessage> messageToSend = messageProducerBuffer;
+                            //Lock lock = new ReentrantLock();
+                            //lock.lock();
+                            //for(CustomMessage customMessage : messageToSend){
 
                                 ObjectMapper mapper = new ObjectMapper();
                                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                mapper.writeValue(out, customMessage);
+                                mapper.writeValue(out, messageProducerBuffer);
                                 //Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
                                 mModel.basicPublish(mExchange, "influxData",
                                         new AMQP.BasicProperties.Builder()
                                                 .contentType("application/json")
                                                 .build(),out.toByteArray());
                                 //Log.e("PUBLISH IN RABBIT","PUBLISH OK");
-                            }
-                            lock.unlock();
+                            //}
+                            //lock.unlock();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
