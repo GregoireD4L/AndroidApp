@@ -149,7 +149,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // RABITTMQServices
     private MessageProducer mMessageProducer = null;
     private List<CustomMessage> trameBuffer = new ArrayList<>(200);
-    private Timestamp timestamp = null;
+    private long timestamp;
 
     // classe de display
     private IDisplayData mDisplayEcgData = new DisplayEcgImpl();
@@ -200,14 +200,14 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
                 //gestion des timesStamps.
                 if(mCompteur == 0)
-                    timestamp = new Timestamp(System.currentTimeMillis());
+                    timestamp = System.currentTimeMillis();
                 else
-                    timestamp.setTime(timestamp.getTime()+2000);
+                    timestamp += 20;
 
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
-                customMessage.setTime(timestamp.getTime());
+                customMessage.setTime(timestamp);
 
 
 
