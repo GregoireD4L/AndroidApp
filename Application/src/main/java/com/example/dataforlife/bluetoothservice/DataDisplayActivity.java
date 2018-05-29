@@ -190,7 +190,7 @@ public class DataDisplayActivity extends Activity {
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
-                customMessage.setTime(Instant.now().toEpochMilli());
+                //customMessage.setTime(Instant.now().toEpochMilli());
 
                 //mMessageProducer.publishToRabbitMQ(customMessage);
 
