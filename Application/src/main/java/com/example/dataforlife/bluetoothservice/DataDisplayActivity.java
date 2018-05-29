@@ -192,7 +192,7 @@ public class DataDisplayActivity extends Activity {
                 customMessage.setId("1");
                 customMessage.setTime(Instant.now().toEpochMilli());
 
-                mMessageProducer.publishToRabbitMQ(customMessage);
+                //mMessageProducer.publishToRabbitMQ(customMessage);
 
                 if (mServiceSelected == 1){
                     displayDataECG(intentData);
@@ -797,7 +797,7 @@ public class DataDisplayActivity extends Activity {
                 respirationDataAbdo.clear();
                 respirationDataThorax.clear();
             } else if(mServiceSelected == 4){
-                tempData.removeRange(0,tempData.getCount());
+                tempData.clear();
             } else {
                 spo2Data.clear();
             }
