@@ -53,10 +53,14 @@ import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import uk.me.berndporr.iirj.Butterworth;
 
@@ -129,6 +133,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private BluetoothGattCharacteristic mNotifyCharacteristic;
     private boolean mConnected = false;
 
+
     // Filtres
     private Butterworth mBtwFilterLow;
     private Butterworth mBtwFilterHigh;
@@ -143,10 +148,10 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
     // RABITTMQServices
     private MessageProducer mMessageProducer = null;
-
+    private List<CustomMessage> trameBuffer = new ArrayList<>(200);
+    private Timestamp timestamp = null;
 
     // classe de display
-
     private IDisplayData mDisplayEcgData = new DisplayEcgImpl();
     private IDisplayDataWithMultipleDataSeries mDataAccelero = new DisplayDataAcceleroImpl();
     private IDisplayDataWithMultipleDataSeries mDataRespiration = new DisplayRespirationImpl();
@@ -193,12 +198,28 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 String intentData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 //Connect to broker
 
+                //gestion des timesStamps.
+                if(mCompteur == 0)
+                    timestamp = new Timestamp(System.currentTimeMillis());
+                else
+                    timestamp.setTime(timestamp.getTime()+2000);
+
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
                 customMessage.setId("1");
-                customMessage.setTime(Instant.now().toEpochMilli());
+                customMessage.setTime(timestamp.getTime());
 
-                mMessageProducer.publishToRabbitMQ(customMessage);
+
+
+                trameBuffer.add(customMessage);
+                if(trameBuffer.size() == 1){
+                    List<CustomMessage> messageToSend = trameBuffer;
+                    mMessageProducer.publishToRabbitMQ(messageToSend);
+                    trameBuffer.clear();
+                }
+
+
+
                 if (mServiceSelected == 1){
                     displayDataECG(intentData);
                 } else if (mServiceSelected == 2){

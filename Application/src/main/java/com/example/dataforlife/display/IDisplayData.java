@@ -22,8 +22,4 @@ public interface IDisplayData{
 
     ArrayList<Double> displayData(String data, boolean isDataSave, int mChannelSelected, boolean isFilteringOn);
 
-    default XyDataSeries clearGraph(XyDataSeries dataToClear){
-        dataToClear.clear();
-        return dataToClear;
-    }
 }

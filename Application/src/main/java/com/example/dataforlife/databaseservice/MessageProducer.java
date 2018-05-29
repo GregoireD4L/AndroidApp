@@ -8,6 +8,10 @@ import com.rabbitmq.client.AMQP;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by kokoghlanian on 04/05/2018.
@@ -18,39 +22,49 @@ public class MessageProducer extends IConnectToRabbitMQ {
      * @param server       The server address
      * @param exchange     The named exchange
      * @param exchangeType The exchange type name
+     *
+     *
      */
+
+    private List<CustomMessage> messageProducerBuffer = new ArrayList<>(50);
     public MessageProducer(String server, String exchange, String exchangeType) {
         super(server, exchange, exchangeType);
     }
 
-    public void publishToRabbitMQ(CustomMessage message){
+    synchronized public void publishToRabbitMQ(List<CustomMessage> messageProducerBuffer){
 
-        Thread thread = new Thread()
-        {
-            @Override
-            public void run() {
+            Thread thread = new Thread()
+            {
+                @Override
+                public void run() {
 
-                while(Running){
+                        try {
+                            connectToRabbitMQ();
+                            List<CustomMessage> messageToSend = messageProducerBuffer;
+                            Lock lock = new ReentrantLock();
+                            lock.lock();
+                            for(CustomMessage customMessage : messageToSend){
 
-                    try {
-                         connectToRabbitMQ();
-                         ObjectMapper mapper = new ObjectMapper();
-                         ByteArrayOutputStream out = new ByteArrayOutputStream();
-                         mapper.writeValue(out, message);
-                         //Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
-                         mModel.basicPublish(mExchange, "influxData",
-                                 new AMQP.BasicProperties.Builder()
-                                         .contentType("application/json")
-                                         .build(),out.toByteArray());
-                         //Log.e("PUBLISH IN RABBIT","PUBLISH OK");
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                                ObjectMapper mapper = new ObjectMapper();
+                                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                mapper.writeValue(out, customMessage);
+                                //Log.e("PUBLISH IN RABBIT","CreateMessage : " + out.toString());
+                                mModel.basicPublish(mExchange, "influxData",
+                                        new AMQP.BasicProperties.Builder()
+                                                .contentType("application/json")
+                                                .build(),out.toByteArray());
+                                //Log.e("PUBLISH IN RABBIT","PUBLISH OK");
+                            }
+                            lock.unlock();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }
-                }
-            }
 
-        };
-        thread.start();
+            };
+            thread.start();
+        }
+
     }
 
-}
