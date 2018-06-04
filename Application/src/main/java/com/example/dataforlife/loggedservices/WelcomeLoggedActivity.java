@@ -89,7 +89,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // Lancement de l'enregistrement
     private boolean isRecording;
 
-    // Objets de visualisation
+    // Objets de visualisationsurface
     private int mCompteur;
     private SciChartSurface surface;
 
@@ -210,11 +210,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 customMessage.setTime(timestamp);
 
 
-
                 //trameBuffer.add(customMessage);
                 mMessageProducer.publishToRabbitMQ(customMessage);
-
-
 
 
                 if (mServiceSelected == 1){
@@ -385,8 +382,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     private void displayRespiration(String data){
-        if (data != null){
 
+        if (data != null){
 
             ArrayList<Double> dataList = mDataRespiration.displayData(data,mChannelSelected);
             mCompteur += 1;
@@ -443,12 +440,12 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             if(mServiceSelected == 1) {
                 ecgData.clear();
             } else if(mServiceSelected == 2){
+                respirationDataAbdo.clear();
+                respirationDataThorax.clear();
+            } else if(mServiceSelected == 3){
                 inertialDataX.clear();
                 inertialDataY.clear();
                 inertialDataZ.clear();
-            } else if(mServiceSelected == 3){
-                respirationDataAbdo.clear();
-                respirationDataThorax.clear();
             } else if(mServiceSelected == 4){
                 tempData.removeRange(0,tempData.getCount());
             } else {
@@ -459,11 +456,12 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideEcgFragment(){
+
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
                 "fanout");
         surface = new SciChartSurface(WelcomeLoggedActivity.this);
-        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph = findViewById(R.id.newGraph);
         newGraph.addView(surface);
         SciChartBuilder.init(WelcomeLoggedActivity.this);
         final SciChartBuilder builder = SciChartBuilder.instance();
@@ -480,12 +478,10 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .withZoomExtentsModifier().withReceiveHandledEvents(true).build()
                 .build();
 
+
+
         surface.getChartModifiers().add(modifier);
-        // Application par défaut de la visualisation ECG
-
-
         surface.getRenderableSeries().add(ecgDataSeries);
-        // Application par défaut des axes
 
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
         final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
@@ -495,10 +491,10 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         // Récupération des données de connexion BT dans l'intent
 
-        mChannelSelection = (RadioGroup) findViewById(R.id.channel_selection);
-        mChannel1 = (RadioButton) findViewById(R.id.channel1);
-        mChannel2 = (RadioButton) findViewById(R.id.channel2);
-        mChannel3 = (RadioButton) findViewById(R.id.channel3);
+        mChannelSelection = findViewById(R.id.channel_selection);
+        mChannel1 =  findViewById(R.id.channel1);
+        mChannel2 =  findViewById(R.id.channel2);
+        mChannel3 =  findViewById(R.id.channel3);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -575,15 +571,18 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .build();
 
         surface.getChartModifiers().add(modifier);
+        surface.getRenderableSeries().add(respirationDataThoraxSeries);
+        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
         final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
 
         Collections.addAll(surface.getYAxes(), yAxis);
         Collections.addAll(surface.getXAxes(), xAxis);
 
-        mChannel1 = (RadioButton) findViewById(R.id.channel1);
-        mChannel2 = (RadioButton) findViewById(R.id.channel2);
-        mChannel3 = (RadioButton) findViewById(R.id.channel3);
+        mChannel1 =  findViewById(R.id.channel1);
+        mChannel2 =  findViewById(R.id.channel2);
+        mChannel3 =  findViewById(R.id.channel3);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -664,6 +663,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .build();
 
         surface.getChartModifiers().add(modifier);
+        surface.getRenderableSeries().add(inertialDataXSeries);
+        surface.getRenderableSeries().add(inertialDataYSeries);
+        surface.getRenderableSeries().add(inertialDataZSeries);
         // Application par défaut des axes
 
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
@@ -712,6 +714,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .build();
 
         surface.getChartModifiers().add(modifier);
+        surface.getRenderableSeries().add(tempDataSeries);
+
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
         final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
 
@@ -744,7 +748,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 "fanout");
 
         surface = new SciChartSurface(this);
-        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph = findViewById(R.id.newGraph);
         newGraph.addView(surface);
         SciChartBuilder.init(this);
         final SciChartBuilder builder = SciChartBuilder.instance();
@@ -762,6 +766,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .build();
 
         surface.getChartModifiers().add(modifier);
+        surface.getRenderableSeries().add(spo2DataSeries);
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
         final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
 
