@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1065890119840",
+    "firebase_url": "https://data-for-life.firebaseio.com",
+    "project_id": "data-for-life",
+    "storage_bucket": "data-for-life.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065890119840:android:896507c095fd26d1",
+        "android_client_info": {
+          "package_name": "com.example.dataforlife"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1065890119840-is2hl60k7nbeh308sne0di4ae4b7nfgs.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "1065890119840-is2hl60k7nbeh308sne0di4ae4b7nfgs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAONpr9T-oHuEYmYXrYy6JJksTwgVsuwMI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -43,6 +43,7 @@ import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
 import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
 import com.example.dataforlife.model.CustomMessage;
+import com.google.firebase.auth.FirebaseAuth;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
 import com.scichart.charting.modifiers.ModifierGroup;
 import com.scichart.charting.visuals.SciChartSurface;
@@ -85,6 +86,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // Selection des paramètres
     private boolean isFilteringOn;
     private boolean isDataSave;
+
+    //Firebase Auth
+    FirebaseAuth auth;
 
     // Lancement de l'enregistrement
     private boolean isRecording;
@@ -206,7 +210,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
                 CustomMessage customMessage = new CustomMessage();
                 customMessage.setData(intentData);
-                customMessage.setId("1");
+                customMessage.setId(auth.getCurrentUser().getUid());
                 customMessage.setTime(timestamp);
 
 
@@ -245,6 +249,9 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
         mCharUuid = intent.getStringExtra(EXTRAS_CHAR_UUID);
         mServiceUuid = intent.getStringExtra(EXTRAS_SERVICE_UUID);
+
+        //Auth
+        auth = FirebaseAuth.getInstance();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 

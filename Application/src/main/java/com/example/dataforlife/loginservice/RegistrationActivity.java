@@ -26,14 +26,8 @@ public class RegistrationActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        Button cancel = (Button) findViewById(R.id.cancel_registration);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(RegistrationActivity.this, WelcomeActivity.class);
-                startActivity(intent);
-            }
-        });
+    }
+    public void returnHome(View view){
+        super.onBackPressed();
     }
 }
