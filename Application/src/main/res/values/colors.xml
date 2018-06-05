@@ -6,4 +6,5 @@
     <color name="background_material_dark">#ffffff</color>
     <color name="text_color_primary">#010101</color>
     <color name="button_register">#339966</color>
+    <color name="error">#f40000</color>
 </resources>

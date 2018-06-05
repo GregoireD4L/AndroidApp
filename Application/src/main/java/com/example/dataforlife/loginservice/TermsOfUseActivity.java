@@ -19,7 +19,7 @@ public class TermsOfUseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.terms_of_use_screen);
 
-        Button agree = (Button) findViewById(R.id.agree_terms);
+        Button agree = findViewById(R.id.agree_terms);
         agree.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -27,14 +27,9 @@ public class TermsOfUseActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
-        Button back = (Button) findViewById(R.id.back_terms);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(TermsOfUseActivity.this, WelcomeActivity.class);
-                startActivity(intent);
-            }
-        });
+    public void returnHome(View view){
+        super.onBackPressed();
     }
 }
