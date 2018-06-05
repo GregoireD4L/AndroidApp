@@ -28,7 +28,7 @@ public class DisplayDataAcceleroImpl implements IDisplayDataWithMultipleDataSeri
                 String[] dataList = data.split("\n");
                 dataDecoded = dataList[dataList.length - 1].replace(" ", "");
                 dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(148, 160).substring(0, 4), 16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(148, 10).substring(4, 8), 16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(148, 160).substring(4, 8), 16);
                 dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(148, 160).substring(8, 12), 16);
 
                 if (dataDecodedX > 32767) {
