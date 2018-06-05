@@ -135,12 +135,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // Objets BlueTooth
     private BluetoothLeService mBTLeService;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
-    private boolean mConnected = false;
-
-
-    // Filtres
-    private Butterworth mBtwFilterLow;
-    private Butterworth mBtwFilterHigh;
 
     // Clé de l'intent
     private static final String EXTRAS_DEVICE_NAME = "NAME";
@@ -191,10 +185,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
                 Log.e(TAG, "bien co");
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
                 Log.e(TAG, "Déco");
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 //nothing
@@ -470,9 +462,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
     public void executeInsideEcgFragment(){
 
-        mMessageProducer = new MessageProducer("51.38.185.206",
-                "logs",
-                "fanout");
         surface = new SciChartSurface(WelcomeLoggedActivity.this);
         newGraph = findViewById(R.id.newGraph);
         newGraph.addView(surface);
