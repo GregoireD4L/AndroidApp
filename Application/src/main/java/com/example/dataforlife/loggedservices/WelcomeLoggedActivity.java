@@ -1,6 +1,5 @@
 package com.example.dataforlife.loggedservices;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -19,17 +18,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.dataforlife.R;
 import com.example.dataforlife.bluetoothservice.BluetoothLeService;
@@ -42,6 +38,7 @@ import com.example.dataforlife.display.DisplaySpO2Impl;
 import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
 import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
+import com.example.dataforlife.loginservice.WelcomeActivity;
 import com.example.dataforlife.model.CustomMessage;
 import com.google.firebase.auth.FirebaseAuth;
 import com.scichart.charting.model.dataSeries.XyDataSeries;
@@ -53,17 +50,10 @@ import com.scichart.drawing.utility.ColorUtil;
 import com.scichart.extensions.builders.SciChartBuilder;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import uk.me.berndporr.iirj.Butterworth;
 
 /**
  * Author Yousria
@@ -92,6 +82,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
     // Lancement de l'enregistrement
     private boolean isRecording;
+    private boolean isBind = false;
 
     // Objets de visualisationsurface
     private int mCompteur;
@@ -318,6 +309,17 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                             transaction.commit();
                         }
 
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("LOGOUT")){
+                            auth.signOut();
+                            if(isBind) {
+                                unbindService(mServiceConnection);
+                                mBTLeService.disconnect();
+                            }
+                            mBTLeService = null;
+                            Intent intent1 = new Intent(WelcomeLoggedActivity.this, WelcomeActivity.class);
+                            startActivity(intent1);
+                        }
+
 
                         return true;
                     }
@@ -358,6 +360,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         // if(mMessageProducer!=null)
         //   mMessageProducer.dispose();
         unbindService(mServiceConnection);
+        isBind = false;
         mBTLeService = null;
     }
 
@@ -535,6 +538,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         });
         Intent gattServiceIntent = new Intent(WelcomeLoggedActivity.this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        isBind = true;
     }
 
     public void executeInsideBreathingFragment(){
@@ -590,7 +594,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
+        isBind = true;
     }
 
     public void executeInsideAcceleroFragment(){
@@ -675,6 +679,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        isBind = true;
     }
 
     public void executeInsideTemperatureFragment(){
@@ -717,6 +722,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         });
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        isBind = true;
 
     }
 
@@ -791,6 +797,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        isBind = true;
     }
 
     public void record(){
