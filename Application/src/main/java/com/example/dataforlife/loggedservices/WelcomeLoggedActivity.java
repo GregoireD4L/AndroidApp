@@ -357,7 +357,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         super.onPause();
         //if(mMessageProducer!=null)
         //  mMessageProducer.dispose();
-        unregisterReceiver(mGattUpdateReceiver);
+        //unregisterReceiver(mGattUpdateReceiver);
     }
 
     @Override
@@ -766,7 +766,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                     record();
             }
         });
