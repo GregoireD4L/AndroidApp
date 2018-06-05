@@ -4,6 +4,11 @@ allprojects {
         // Set up a repository which looks for dependencies in the "libs" folder
         flatDir{dirs 'java/libs'}
     }
+    buildscript {
+        dependencies {
+            classpath 'com.google.gms:google-services:4.0.0'
+        }
+    }
 }
 
 

@@ -47,9 +47,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.5.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
     implementation 'com.android.support:design:27.1.1'
+    implementation 'com.google.firebase:firebase-core:16.0.0'
+    implementation 'com.firebaseui:firebase-ui-auth:4.0.0'
+    implementation 'com.google.firebase:firebase-auth:15.0.0'
 
 
 }
+apply plugin: 'com.google.gms.google-services'
 // The sample build uses multiple directories to
 // keep boilerplate and common code separate from
 // the main sample code.
@@ -65,7 +69,7 @@ android {
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 27
     }
 
