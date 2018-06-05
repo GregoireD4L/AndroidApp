@@ -27,9 +27,9 @@ public class DisplayDataAcceleroImpl implements IDisplayDataWithMultipleDataSeri
             if (channelSelected == 1) {
                 String[] dataList = data.split("\n");
                 dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(24, 36).substring(0, 4), 16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(24, 36).substring(4, 8), 16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(24, 36).substring(8, 12), 16);
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(148, 160).substring(0, 4), 16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(148, 10).substring(4, 8), 16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(148, 160).substring(8, 12), 16);
 
                 if (dataDecodedX > 32767) {
                     dataDecodedX = (-65536 + dataDecodedX) * 2 / 32768;
@@ -50,9 +50,9 @@ public class DisplayDataAcceleroImpl implements IDisplayDataWithMultipleDataSeri
             } else if (channelSelected == 2) {
                 String[] dataList = data.split("\n");
                 dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(12, 24).substring(0, 4), 16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(12, 24).substring(4, 8), 16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(12, 24).substring(8, 12), 16);
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(136, 148).substring(0, 4), 16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(136, 148).substring(4, 8), 16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(136, 148).substring(8, 12), 16);
                 if (dataDecodedX > 32767) {
                     dataDecodedX = (-65536 + dataDecodedX) * 250 / 32768;
                 } else {
@@ -71,9 +71,9 @@ public class DisplayDataAcceleroImpl implements IDisplayDataWithMultipleDataSeri
             } else {
                 String[] dataList = data.split("\n");
                 dataDecoded = dataList[dataList.length - 1].replace(" ", "");
-                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(0, 12).substring(0, 4), 16);
-                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(0, 12).substring(4, 8), 16);
-                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(0, 12).substring(8, 12), 16);
+                dataDecodedX = (double) Integer.parseInt(dataDecoded.substring(124, 136).substring(0, 4), 16);
+                dataDecodedY = (double) Integer.parseInt(dataDecoded.substring(124, 136).substring(4, 8), 16);
+                dataDecodedZ = (double) Integer.parseInt(dataDecoded.substring(124, 136).substring(8, 12), 16);
                 if (dataDecodedX > 32767) {
                     dataDecodedX = (-65536 + dataDecodedX) * 2 / 32768;
                 } else {
