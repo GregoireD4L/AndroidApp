@@ -234,7 +234,12 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_logged);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //creation du producer.
+        mMessageProducer = new MessageProducer("51.38.185.206",
+                "logs",
+                "direct");
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -480,7 +485,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 .build();
 
 
-
         surface.getChartModifiers().add(modifier);
         surface.getRenderableSeries().add(ecgDataSeries);
 
@@ -542,9 +546,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideBreathingFragment(){
-        mMessageProducer = new MessageProducer("51.38.185.206",
-                "logs",
-                "fanout");
 
         surface = new SciChartSurface(this);
         newGraph = (LinearLayout) findViewById(R.id.newGraph);
@@ -605,9 +606,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideAcceleroFragment(){
-        mMessageProducer = new MessageProducer("51.38.185.206",
-                "logs",
-                "fanout");
 
         surface = new SciChartSurface(this);
         newGraph = (LinearLayout) findViewById(R.id.newGraph);
@@ -696,9 +694,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideTemperatureFragment(){
-        mMessageProducer = new MessageProducer("51.38.185.206",
-                "logs",
-                "fanout");
 
         surface = new SciChartSurface(this);
         newGraph = (LinearLayout) findViewById(R.id.newGraph);
@@ -746,9 +741,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     }
 
     public void executeInsideSpO2Fragment(){
-        mMessageProducer = new MessageProducer("51.38.185.206",
-                "logs",
-                "fanout");
 
         surface = new SciChartSurface(this);
         newGraph = findViewById(R.id.newGraph);
