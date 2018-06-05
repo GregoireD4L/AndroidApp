@@ -57,7 +57,7 @@ public abstract class IConnectToRabbitMQ {
      */
     public boolean connectToRabbitMQ()
     {
-        if(mModel!= null && mModel.isOpen() && mConnection.isOpen())
+        if(mModel!= null && mModel.isOpen() && mConnection != null)
             return true;
         try
         {
@@ -69,10 +69,13 @@ public abstract class IConnectToRabbitMQ {
             connectionFactory.setHost(mServer);
 
             mConnection = connectionFactory.newConnection();
-            mModel = mConnection.createChannel();
-            mModel.exchangeDeclare(mExchange, MyExchangeType, true);
-
-            return true;
+            if(mConnection != null)
+            {
+                mModel = mConnection.createChannel();
+                mModel.exchangeDeclare(mExchange, MyExchangeType, true);
+                return true;
+            }
+            return false;
         }
         catch (Exception e)
         {

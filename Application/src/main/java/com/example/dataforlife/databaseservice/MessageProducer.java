@@ -5,6 +5,7 @@ import android.util.Log;
 import com.example.dataforlife.model.CustomMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AlreadyClosedException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,7 +27,6 @@ public class MessageProducer extends IConnectToRabbitMQ {
      *
      */
 
-    private List<CustomMessage> messageProducerBuffer = new ArrayList<>(50);
     public MessageProducer(String server, String exchange, String exchangeType) {
         super(server, exchange, exchangeType);
     }
@@ -39,11 +39,8 @@ public class MessageProducer extends IConnectToRabbitMQ {
                 public void run() {
 
                         try {
-                            connectToRabbitMQ();
-                            //List<CustomMessage> messageToSend = messageProducerBuffer;
-                            //Lock lock = new ReentrantLock();
-                            //lock.lock();
-                            //for(CustomMessage customMessage : messageToSend){
+
+                            if(connectToRabbitMQ()){
 
                                 ObjectMapper mapper = new ObjectMapper();
                                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -53,13 +50,11 @@ public class MessageProducer extends IConnectToRabbitMQ {
                                         new AMQP.BasicProperties.Builder()
                                                 .contentType("application/json")
                                                 .build(),out.toByteArray());
-                                //Log.e("PUBLISH IN RABBIT","PUBLISH OK");
-                            //}
-                            //lock.unlock();
-                        } catch (IOException e) {
+                            }
+
+                        } catch (IOException | AlreadyClosedException e) {
                             e.printStackTrace();
                         }
-
                     }
 
             };
