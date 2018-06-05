@@ -504,11 +504,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
                     record();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
         // Initialisation des filtres ECG
@@ -548,7 +544,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     public void executeInsideBreathingFragment(){
 
         surface = new SciChartSurface(this);
-        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph = findViewById(R.id.newGraph);
         newGraph.addView(surface);
         SciChartBuilder.init(this);
         final SciChartBuilder builder = SciChartBuilder.instance();
@@ -585,11 +581,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
                     record();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -608,7 +600,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     public void executeInsideAcceleroFragment(){
 
         surface = new SciChartSurface(this);
-        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph = findViewById(R.id.newGraph);
         mChannelSelection =  findViewById(R.id.channel_selection);
         newGraph.addView(surface);
         SciChartBuilder.init(this);
@@ -656,11 +648,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
                     record();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -696,7 +684,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     public void executeInsideTemperatureFragment(){
 
         surface = new SciChartSurface(this);
-        newGraph = (LinearLayout) findViewById(R.id.newGraph);
+        newGraph = findViewById(R.id.newGraph);
         newGraph.addView(surface);
         SciChartBuilder.init(this);
         final SciChartBuilder builder = SciChartBuilder.instance();
@@ -728,11 +716,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
                     record();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
@@ -775,12 +759,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                try {
+            public void onClick(View view){
                     record();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -817,7 +797,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
 
-    public void record() throws IOException {
+    public void record(){
         if(!isRecording){
             mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
             mBTLeService.setCharacteristicNotification(mNotifyCharacteristic, true);
