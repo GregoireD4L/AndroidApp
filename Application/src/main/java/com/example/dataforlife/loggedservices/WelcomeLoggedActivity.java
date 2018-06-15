@@ -427,7 +427,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
             ArrayList<Double>  dataToAddToDataSeries = mDisplayspo2Data.displayData(data,isDataSave,mChannelSelected,isFilteringOn);
             for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
-                ecgData.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
+                spo2Data.append((mCompteur + j) * 2, dataToAddToDataSeries.get(j));
             }
             mCompteur += 1;
             surface.zoomExtents();
