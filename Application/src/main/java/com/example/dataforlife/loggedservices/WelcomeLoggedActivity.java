@@ -224,7 +224,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         //creation du producer.
         mMessageProducer = new MessageProducer("51.38.185.206",
                 "logs",
-                "direct");
+                "fanout");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
