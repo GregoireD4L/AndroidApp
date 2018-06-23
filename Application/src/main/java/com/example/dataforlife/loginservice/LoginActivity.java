@@ -15,8 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dataforlife.R;
-import com.example.dataforlife.loggedservices.WelcomeLoggedActivity;
-import com.example.dataforlife.pairservice.PairPagerActivity;
+import com.example.dataforlife.pairservice.PairActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -45,7 +44,7 @@ public class LoginActivity extends AppCompatActivity{
 
         //verify if user is authentified
         if (auth.getCurrentUser() != null) {
-            startActivity(new Intent(LoginActivity.this, PairPagerActivity.class));
+            startActivity(new Intent(LoginActivity.this, PairActivity.class));
             finish();
         }
 
@@ -108,7 +107,7 @@ public class LoginActivity extends AppCompatActivity{
 
     private void updateUI(FirebaseUser user) {
         if(user != null){
-            Intent intent = new Intent(LoginActivity.this, PairPagerActivity.class);
+            Intent intent = new Intent(LoginActivity.this, PairActivity.class);
             startActivity(intent);
         }else{
             Log.e("LOGIN ACTIVITY", "AUTH FAILED");

@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.dataforlife.*;
-import com.example.dataforlife.pairservice.PairPagerActivity;
 
 /**
  * Author Yousria
