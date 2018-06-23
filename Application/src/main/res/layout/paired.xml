@@ -19,10 +19,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <android.support.v7.widget.Toolbar
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:minHeight="@dimen/margin_huge"
+    android:paddingStart="@dimen/margin_medium">
+
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_launcher"
+        android:layout_marginEnd="@dimen/margin_medium"/>
+</android.support.v7.widget.Toolbar>
+
+
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Paired !"
+        android:text="Paired ! wait until we prepare data displays ..."
         android:textColor="@color/text_color_primary"
         android:layout_marginLeft="@dimen/margin_medium"
         android:textSize="20sp"

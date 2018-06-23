@@ -4,6 +4,20 @@
     android:layout_height="match_parent">
 
 
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:minHeight="@dimen/margin_huge"
+        android:paddingStart="@dimen/margin_medium">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_launcher"
+            android:layout_marginEnd="@dimen/margin_medium"/>
+
+    </android.support.v7.widget.Toolbar>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -11,5 +25,15 @@
         android:textColor="@color/text_color_primary"
         android:layout_marginLeft="@dimen/margin_medium"
         android:textSize="20sp"/>
+
+    <android.support.v7.widget.AppCompatButton
+        android:layout_width="220dp"
+        android:id="@+id/go_to_devices_list"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="400dp"
+        android:text="Go to devices list"
+        android:textColor="@color/accent_material_light"
+        android:background="@drawable/mybutton_standard"/>
 
 </LinearLayout>

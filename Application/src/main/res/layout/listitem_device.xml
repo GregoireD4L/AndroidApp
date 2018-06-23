@@ -18,6 +18,19 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:minHeight="@dimen/margin_huge"
+        android:paddingStart="@dimen/margin_medium">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_launcher"
+            android:layout_marginEnd="@dimen/margin_medium"/>
+    </android.support.v7.widget.Toolbar>
 
     <TextView
         android:layout_width="wrap_content"

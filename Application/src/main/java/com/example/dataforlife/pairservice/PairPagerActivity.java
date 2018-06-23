@@ -56,119 +56,75 @@ import java.util.List;
 
 public class PairPagerActivity extends FragmentActivity {
 
-
     private final static String TAG = PairPagerActivity.class.getSimpleName();
-    private final static String TAG2 = PairedFragment.class.getSimpleName();
-    private DeviceListAdapter mDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
-    private boolean mScanning;
-    private Handler mHandler;
-    private BluetoothLeService mBluetoothLeService;
-    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
-    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private static final String EXTRAS_CHAR_UUID = "CHAR_UUID";
-    private static final String EXTRAS_SERVICE_UUID = "SERVICE_UUID";
-
-    private Button mStopButton;
-    private TextView mConnectionState;
-    private TextView mDataField;
-    private String mDeviceName;
-    private String mDeviceAddress;
-    private ExpandableListView mGattServicesList;
-    private List<BluetoothGattService> services;
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
-            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    private boolean mConnected = false;
-    private BluetoothGattCharacteristic mNotifyCharacteristic;
-
-    private final String LIST_NAME = "NAME";
-    private final String LIST_UUID = "UUID";
-
-
     private int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 455 ;
 
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
 
-    /**
-     * The number of pages (wizard steps) to show in this demo.
-     */
-    private static final int NUM_PAGES = 3;
-
-    /**
-     * The pager widget, which handles animation and allows swiping horizontally to access previous
-     * and next wizard steps.
-     */
-    private ViewPager mPager;
-
-    /**
-     * The pager adapter, which provides the pages to the view pager widget.
-     */
-    private PagerAdapter mPagerAdapter;
-
-
-    final ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-            if (!mBluetoothLeService.initialize()) {
-                Log.e(TAG, "Unable to initialize Bluetooth");
-                finish();
-            }
-            // Automatically connects to the device upon successful start-up initialization.
-            boolean connected = mBluetoothLeService.connect(mDeviceAddress);
-            if(connected){
-                Toast.makeText(PairPagerActivity.this, "Bluetooth connected", Toast.LENGTH_SHORT).show();
-            }
-            if(mBluetoothLeService == null) {
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBluetoothLeService = null;
-        }
-    };
-
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                services = mBluetoothLeService.getSupportedGattServices();
-                for (BluetoothGattService service : services) {
-                    List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
-                    for (BluetoothGattCharacteristic characteristic : characteristics) {
-                        String uuid = characteristic.getUuid().toString();
-                        String serviceUuid = characteristic.getService().getUuid().toString();
-                        if(uuid.equals("0ab50002-c2ce-c4ab-e711-ce93701e73bc") ||
-                                serviceUuid.equals("0ab50002-c2ce-c4ab-e711-ce93701e73bc")){
-                            startDataAcquisition(mDeviceName, mDeviceAddress, serviceUuid, uuid);
-                        }
-                    }
-                }
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                //displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.bluetooth_pager);
+        setContentView(R.layout.activation_view_pager);
+        //mHandler = new Handler();
 
-        // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (ViewPager) findViewById(R.id.bluetooth_pager);
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
-        mHandler = new Handler();
+        Button GoToButton = findViewById(R.id.go_to_devices_list);
+        GoToButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(PairPagerActivity.this, ActivationView.class);
+                startActivity(intent);
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Getting permission", Toast.LENGTH_SHORT);
+            Log.e(TAG, "Getting permission");
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                final Activity myActivity = this;
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                alertBuilder.setCancelable(true);
+                alertBuilder.setMessage("Write external storage permission is necessary to write event!!!");
+                alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(myActivity, new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    }
+                });
+            } else {
+
+                Log.e(TAG, "Getting permission easy");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+            }
+        }
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        // Checks if Bluetooth is supported on the device.
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        if (!mBluetoothAdapter.isEnabled()) {
+            if (!mBluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
 
     }
 
@@ -183,36 +139,16 @@ public class PairPagerActivity extends FragmentActivity {
     }
 
     public void goToAnalytics(View v){
-        scanLeDevice(false);
+        //scanLeDevice(false);
         Intent intent = new Intent(PairPagerActivity.this, WelcomeLoggedActivity.class);
         startActivity(intent);
     }
 
-    private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    invalidateOptionsMenu();
-                }
-            }, SCAN_PERIOD);
-
-            mScanning = true;
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
-        } else {
-            mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
-        }
-        invalidateOptionsMenu();
-    }
 
     public void executeInsideFragment() {
         //first fragments
-        switch (mPager.getCurrentItem()){
-            case 0:
+        //switch (mPager.getCurrentItem()){
+            //case 0:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
                 }
@@ -259,10 +195,10 @@ public class PairPagerActivity extends FragmentActivity {
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                     }
                 }
-                break;
+                //break;
 
                 //second fragment
-            case 1:
+            /*case 1:
                 ListView listView = (ListView) findViewById(R.id.devices);
                 if (!mBluetoothAdapter.isEnabled()) {
                     if (!mBluetoothAdapter.isEnabled()) {
@@ -290,11 +226,11 @@ public class PairPagerActivity extends FragmentActivity {
                     }
                 });
                 break;
-        }
+        }*/
     }
 
 
-    @Override
+    /*@Override
     public void onBackPressed() {
         if (mPager.getCurrentItem() == 0) {
             // If the user is currently looking at the first step, allow the system to handle the
@@ -306,10 +242,7 @@ public class PairPagerActivity extends FragmentActivity {
         }
     }
 
-    /**
-     * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
-     * sequence.
-     */
+
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
@@ -320,11 +253,11 @@ public class PairPagerActivity extends FragmentActivity {
         public Fragment getItem(int position) {
             switch (position){
                 case 0:
-                    return new ActivationViewFragment();
+                    return new ActivationView();
                 case 1:
                     return new SelectionFragment();
                 case 2:
-                    return new PairedFragment();
+                    return new PairedActivity();
                 default :
                     return null;
             }
@@ -334,110 +267,8 @@ public class PairPagerActivity extends FragmentActivity {
         public int getCount() {
             return NUM_PAGES;
         }
-    }
+    }*/
 
     // Adapter for holding devices found through scanning.
-    private class DeviceListAdapter extends BaseAdapter {
-        private ArrayList<BluetoothDevice> mLeDevices;
-        private LayoutInflater mInflator;
 
-        public DeviceListAdapter() {
-            super();
-            mLeDevices = new ArrayList<>();
-            mInflator = PairPagerActivity.this.getLayoutInflater();
-        }
-
-        public void addDevice(BluetoothDevice device) {
-            if(!mLeDevices.contains(device)) {
-                mLeDevices.add(device);
-            }
-        }
-
-        public BluetoothDevice getDevice(int position) {
-            return mLeDevices.get(position);
-        }
-
-        public void clear() {
-            mLeDevices.clear();
-        }
-
-        @Override
-        public int getCount() {
-            return mLeDevices.size();
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return mLeDevices.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            ViewHolder viewHolder;
-            // General ListView optimization code.
-            if (view == null) {
-                view = mInflator.inflate(R.layout.devices_list, null);
-                viewHolder = new ViewHolder();
-                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
-                viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
-                view.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) view.getTag();
-            }
-
-            BluetoothDevice device = mLeDevices.get(i);
-            final String deviceName = device.getName();
-            if (deviceName != null && deviceName.length() > 0)
-                viewHolder.deviceName.setText(deviceName);
-            else
-                viewHolder.deviceName.setText(R.string.unknown_device);
-            viewHolder.deviceAddress.setText(device.getAddress());
-
-            return view;
-        }
-    }
-
-    // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mDeviceListAdapter.addDevice(device);
-                            mDeviceListAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
-            };
-
-    static class ViewHolder {
-        TextView deviceName;
-        TextView deviceAddress;
-    }
-
-    private static IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
-        return intentFilter;
-    }
-
-    public void startDataAcquisition(String deviceName, String deviceAddress, String serviceAddress, String charAddress) {
-        final Intent intent = new Intent(this, WelcomeLoggedActivity.class);
-        intent.putExtra(EXTRAS_DEVICE_NAME, deviceName);
-        intent.putExtra(EXTRAS_DEVICE_ADDRESS, deviceAddress);
-        intent.putExtra(EXTRAS_SERVICE_UUID, serviceAddress);
-        intent.putExtra(EXTRAS_CHAR_UUID, charAddress);
-        startActivity(intent);
-    }
 }
