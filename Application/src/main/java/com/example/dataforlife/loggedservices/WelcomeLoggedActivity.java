@@ -569,7 +569,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         surface.getChartModifiers().add(modifier);
         surface.getRenderableSeries().add(respirationDataThoraxSeries);
-        surface.getRenderableSeries().add(respirationDataAbdoSeries);
+        // Enlever respiration thorax
+        // surface.getRenderableSeries().add(respirationDataAbdoSeries);
 
         final IAxis xAxis = builder.newNumericAxis().withAxisTitle("Temps (ms)").build();
         final IAxis yAxis = builder.newNumericAxis().withAxisTitle("Potentiel").build();
