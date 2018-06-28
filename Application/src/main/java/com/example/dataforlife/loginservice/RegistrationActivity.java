@@ -13,11 +13,14 @@ import android.widget.Toast;
 
 import com.example.dataforlife.R;
 import com.example.dataforlife.loggedservices.WelcomeLoggedActivity;
+import com.example.dataforlife.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Author Yousria
@@ -27,22 +30,30 @@ public class RegistrationActivity extends AppCompatActivity {
     private EditText registrationCode;
     private EditText email;
     private EditText password;
+    private EditText firstName;
+    private EditText lastName;
+
     private Button register;
 
     private static String TAG = "REGISTRATION ACTIVITY";
 
-    FirebaseAuth auth;
+    private FirebaseAuth mAuth;
+    private FirebaseDatabase mDataBase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_screen);
-        auth = FirebaseAuth.getInstance();
+
+        mAuth = FirebaseAuth.getInstance();
+        mDataBase = FirebaseDatabase.getInstance();
 
         registrationCode = findViewById(R.id.registration_code);
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
         register = findViewById(R.id.register_registration);
+        firstName =  findViewById(R.id.first_name);
+        lastName = findViewById(R.id.last_name);
 
         register.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,7 +75,7 @@ public class RegistrationActivity extends AppCompatActivity {
         }
 
         // [START create_user_with_email]
-        auth.createUserWithEmailAndPassword(email, password)
+        mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -72,7 +83,8 @@ public class RegistrationActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             Toast.makeText(RegistrationActivity.this, "Registration performed, you can login", Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = auth.getCurrentUser();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            writeNewUser(user.getUid(),user.getEmail(),firstName.getText().toString(),lastName.getText().toString());
                             updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -115,6 +127,14 @@ public class RegistrationActivity extends AppCompatActivity {
         }else{
             Log.e(TAG, "Registration failed");
         }
+    }
+
+    private void writeNewUser(String userId, String email, String firstName, String lastName) {
+
+        User user = new User(email, firstName, lastName);
+
+        DatabaseReference ref =  mDataBase.getReference();
+        ref.child("users").child(userId).setValue(user);
     }
 
 }
