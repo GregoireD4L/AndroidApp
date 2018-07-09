@@ -417,7 +417,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         if (data != null){
 
             mCompteur += 1;
-            tempData.append(20*mCompteur, 175.72*mDataTempArray.displayData(data,mChannelSelected).get(0)/65536 - 46.85);
+            tempData.append(20*mCompteur, mDataTempArray.displayData(data,mChannelSelected).get(0) / 256);
             surface.zoomExtents();
         }
     }
