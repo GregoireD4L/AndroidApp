@@ -3,8 +3,10 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_indicator"
+            android:title="indicator" />
+        <item
             android:id="@+id/nav_ecg"
-
             android:title="ECG" />
         <item
             android:id="@+id/nav_breathing"

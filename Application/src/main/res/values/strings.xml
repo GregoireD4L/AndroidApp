@@ -55,5 +55,8 @@ You will be automatically redirected to the home page.</string>
     <string name="influx_db_id">Esgi_User</string>
     <string name="influx_db_pwd">dataforlife2018</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 
 </resources>

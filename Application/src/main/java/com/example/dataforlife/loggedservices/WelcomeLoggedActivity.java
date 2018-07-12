@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -38,6 +39,8 @@ import com.example.dataforlife.display.DisplaySpO2Impl;
 import com.example.dataforlife.display.DisplayTempImpl;
 import com.example.dataforlife.display.IDisplayData;
 import com.example.dataforlife.display.IDisplayDataWithMultipleDataSeries;
+import com.example.dataforlife.indicateurservice.ContinuousWaveletTranform;
+import com.example.dataforlife.indicateurservice.DoubleQueue;
 import com.example.dataforlife.loginservice.WelcomeActivity;
 import com.example.dataforlife.model.CustomMessage;
 import com.google.firebase.auth.FirebaseAuth;
@@ -76,6 +79,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     // Selection des paramètres
     private boolean isFilteringOn;
     private boolean isDataSave;
+
+    private boolean isIndicateurFragment = false;
 
     //Firebase Auth
     FirebaseAuth auth;
@@ -123,6 +128,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private CheckBox mFilterOn;
     private LinearLayout newGraph;
 
+    private TextView mBpmIndocator;
+
     // Objets BlueTooth
     private BluetoothLeService mBTLeService;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -147,6 +154,14 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private IDisplayDataWithMultipleDataSeries mDataTempArray = new DisplayTempImpl();
     private IDisplayData mDisplayspo2Data = new DisplaySpO2Impl();
 
+
+    //objets de calcule ecg
+
+    private DoubleQueue ecgD1Queue;
+    private DoubleQueue ecgD1Transformed;
+    private DoubleQueue rPeaks;
+    private ContinuousWaveletTranform cwt;
+    private double rPeakThreshold;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -200,8 +215,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 //trameBuffer.add(customMessage);
                 mMessageProducer.publishToRabbitMQ(customMessage);
 
-
-                if (mServiceSelected == 1){
+                if(isIndicateurFragment){
+                    calculEcgIndicator(intentData);
+                    //displayRespiration(intentData);
+                }
+                else if (mServiceSelected == 1){
                     displayDataECG(intentData);
                 } else if (mServiceSelected == 2){
                     displayRespiration(intentData);
@@ -219,6 +237,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.welcome_logged);
 
         //creation du producer.
@@ -237,6 +256,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
         mCharUuid = intent.getStringExtra(EXTRAS_CHAR_UUID);
         mServiceUuid = intent.getStringExtra(EXTRAS_SERVICE_UUID);
+
+        initIndicateurBPM();
 
         //Auth
         auth = FirebaseAuth.getInstance();
@@ -309,6 +330,18 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                             transaction.commit();
                         }
 
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("INDICATOR")){
+                            menuItem.setChecked(true);
+                            // close drawer when item is tapped
+                            mDrawerLayout.closeDrawers();
+                            //start fragment
+                            FragmentManager manager = getFragmentManager();
+                            FragmentTransaction transaction = manager.beginTransaction();
+                            transaction.replace(R.id.content_frame,new IndicateurFragment());
+                            transaction.addToBackStack(null);
+                            transaction.commit();
+                        }
+
                         if(menuItem.getTitle().toString().equalsIgnoreCase("LOGOUT")){
                             auth.signOut();
                             if(isBind) {
@@ -357,12 +390,45 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // if(mMessageProducer!=null)
         //   mMessageProducer.dispose();
         unbindService(mServiceConnection);
         isBind = false;
         mBTLeService = null;
     }
+
+
+    private void calculEcgIndicator(String data) {
+
+        int heartRate;
+        if (data != null) {
+            ArrayList<Double> dataToAddToDataSeries = mDisplayEcgData.displayData(data,isDataSave,1,isFilteringOn);
+            for (int j = 0; j < dataToAddToDataSeries.size(); j++) {
+                double tranformed;
+                ecgD1Queue.add(dataToAddToDataSeries.get(j));
+                //Convolution
+                tranformed = cwt.convolution(ecgD1Queue);
+                //Mise en mémoire du résultat dans la queue -> La queue représente la transformée de la courbe ecg
+                ecgD1Transformed.add(tranformed);
+
+                // Detection de pic de la transformée
+                if((ecgD1Transformed.previousIsMax())&(ecgD1Transformed.getElement(1) > rPeakThreshold)&(ecgD1Transformed.getElement(1) < 0.2)){
+                    rPeakThreshold = ecgD1Transformed.getElement(1);
+                    rPeaks.add((mCompteur + j)*2 - 50);
+                    heartRate = rPeaks.getBPM();
+                    if(rPeaks.getFirstElement() == 0) {
+                        if((heartRate > 50)&(heartRate < 150)) {
+                            mBpmIndocator.setText(Integer.toString(heartRate));
+                        }
+                    }
+                }
+                rPeakThreshold /=1.0005;
+            }
+            mCompteur+=10;
+        }
+    }
+
 
     private void displayDataECG(String data) {
 
@@ -514,6 +580,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         isFilteringOn = false;
         isRecording = false;
         isDataSave = false;
+        isIndicateurFragment = false;
 
         mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -592,6 +659,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         isFilteringOn = false;
         isRecording = false;
         isDataSave = false;
+        isIndicateurFragment = false;
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -655,6 +723,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mCompteur = 0;
         mServiceSelected = 3;
+        isIndicateurFragment = false;
 
         mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -713,6 +782,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mCompteur = 0;
         mServiceSelected = 4;
+        isIndicateurFragment = false;
 
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
@@ -773,6 +843,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         isFilteringOn = false;
         isRecording = false;
         isDataSave = false;
+        isIndicateurFragment = false;
 
         mChannelSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -801,6 +872,25 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         isBind = true;
     }
 
+    public void executeInsideIndicateurFragment(){
+
+        isIndicateurFragment = true;
+
+        mBpmIndocator = findViewById(R.id.text_view_bpm);
+        mRecord = findViewById(R.id.record_button);
+        mRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                record();
+            }
+        });
+
+
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        isBind = true;
+    }
+
     public void record(){
         if(!isRecording){
             mNotifyCharacteristic = mBTLeService.getmBluetoothGatt().getService(UUID.fromString(mServiceUuid)).getCharacteristic(UUID.fromString(mCharUuid));
@@ -820,4 +910,12 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         }
     }
 
+    void initIndicateurBPM(){
+
+        cwt = new ContinuousWaveletTranform(5);
+        ecgD1Queue = new DoubleQueue(51);
+        ecgD1Transformed = new DoubleQueue(3);
+        rPeaks = new DoubleQueue(10);
+        rPeakThreshold = 0;
+    }
 }
