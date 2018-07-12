@@ -129,6 +129,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private LinearLayout newGraph;
 
     private TextView mBpmIndocator;
+    private TextView mRespiTextView;
 
     // Objets BlueTooth
     private BluetoothLeService mBTLeService;
@@ -162,6 +163,13 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private DoubleQueue rPeaks;
     private ContinuousWaveletTranform cwt;
     private double rPeakThreshold;
+
+   // calcul respi indicateur 
+    private DoubleQueue resp1Queue;
+    private DoubleQueue respExtreme;
+    private DoubleQueue respExtremeVal;
+    private DoubleQueue respExtremeType;
+    private int respRate;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -217,6 +225,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
                 if(isIndicateurFragment){
                     calculEcgIndicator(intentData);
+                    calculRespiIndicator(intentData);
                     //displayRespiration(intentData);
                 }
                 else if (mServiceSelected == 1){
@@ -257,7 +266,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mCharUuid = intent.getStringExtra(EXTRAS_CHAR_UUID);
         mServiceUuid = intent.getStringExtra(EXTRAS_SERVICE_UUID);
 
-        initIndicateurBPM();
+        initIndicateur();
 
         //Auth
         auth = FirebaseAuth.getInstance();
@@ -454,6 +463,66 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         }
     }
 
+
+
+    private void calculRespiIndicator(String data){
+
+        if (data != null){
+
+            ArrayList<Double> dataList = mDataRespiration.displayData(data,mChannelSelected);
+            mCompteur += 1;
+
+            Double dataDecodedT = dataList.get(0);
+            Double dataDecodedA = dataList.get(1);
+
+            resp1Queue.add(dataDecodedT);
+            // On vient de trouver un max
+            if(resp1Queue.previousIsMax()) {
+                int lastIndex = respExtremeType.getSize() - 1;
+                //Si le dernier point était un max et que celui que l'on vient de trouver est plus grand -> On remplace
+                if (respExtremeType.getElement(lastIndex) == 1) {
+                    if (dataDecodedT > respExtremeVal.getElement(lastIndex)) {
+                        respExtremeVal.replaceLast(dataDecodedT);
+                        respExtreme.replaceLast(mCompteur - 1);
+                        Log.e(TAG, "last max replaced");
+                    }
+                    //Si le dernier point était un min et que ce max est >5 fois plus grand : c'est un vrai pic de respiration
+                } else { // A priori ça n'arrivera jamais
+                    if ((dataDecodedT - respExtremeVal.getElement(lastIndex)) > 5) {
+                        respExtreme.add(mCompteur - 1);
+                        respExtremeVal.add(dataDecodedT);
+                        respExtremeType.add(1);
+                        Log.e(TAG, "new max detected");
+                    }
+                }
+                if (mCompteur > 1000) {
+                    mRespiTextView.setText(Integer.toString(respExtreme.getRespFreq()));
+                }
+            }
+            //On vient de trouver un min
+            else if (resp1Queue.previousIsMin()){
+                int lastIndex = respExtremeType.getSize() - 1;
+                //On avait un min et on vient d'en trouver un plus petit -> On remplace
+                if(respExtremeType.getElement(lastIndex) == 0){
+                    if(dataDecodedT < respExtremeVal.getElement(lastIndex)){
+                        respExtremeVal.replaceLast(dataDecodedT);
+                        respExtreme.replaceLast(mCompteur - 1);
+                        Log.e(TAG,"last min replaced");
+                    }
+                    //On avait un max et ce min est >5 fois plus petit : c'est un vrai pic de respiration
+                } else {
+                    if((dataDecodedT - respExtremeVal.getElement(lastIndex)) < -5){
+                        respExtreme.add(mCompteur - 1);
+                        respExtremeVal.add(dataDecodedT);
+                        respExtremeType.add(0);
+                        Log.e(TAG,"new min detected");
+                    }
+                }
+            }
+            mCompteur += 1;
+        }
+    }
+
     private void displayRespiration(String data){
 
         if (data != null){
@@ -467,18 +536,10 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
             respirationDataThorax.append(20*mCompteur, dataDecodedT);
             respirationDataAbdo.append(20*mCompteur,dataDecodedA);
 
-            /*if (wrongFrame) {
-                Log.e(TAG, dataDecoded);
-            }*/
-            if (dataDecodedA > 1023){
-                //Log.e(TAG, dataDecoded);
-                wrongFrame = true;
-            } else {
-                wrongFrame = false;
-            }
             surface.zoomExtents();
         }
     }
+
     private void displayTemp(String data){
         if (data != null){
 
@@ -877,6 +938,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         isIndicateurFragment = true;
 
         mBpmIndocator = findViewById(R.id.text_view_bpm);
+        mRespiTextView = findViewById(R.id.text_view_respi);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -910,12 +972,18 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         }
     }
 
-    void initIndicateurBPM(){
+    void initIndicateur(){
 
         cwt = new ContinuousWaveletTranform(5);
         ecgD1Queue = new DoubleQueue(51);
         ecgD1Transformed = new DoubleQueue(3);
         rPeaks = new DoubleQueue(10);
         rPeakThreshold = 0;
+
+
+        resp1Queue = new DoubleQueue(3);
+        respExtreme = new DoubleQueue(10);
+        respExtremeVal = new DoubleQueue(10);
+        respExtremeType = new DoubleQueue(10);
     }
 }
