@@ -5,56 +5,97 @@
     android:layout_height="match_parent"
     tools:context=".loggedservices.IndicateurFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="60dp"
-        android:layout_gravity="center_horizontal">
-
-        <TextView
-            android:id="@+id/text_view_bpm"
-            android:layout_width="100dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="60dp">
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="@color/accent_material_light"
-            android:textSize="50px" />
-
-        <TextView
-            android:id="@+id/text_view_respi"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="@color/accent_material_light"
-            android:textSize="50px" />
-
-
-        text_view_respi
+            android:src="@drawable/heart_bpm" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="95dp"
+        android:orientation="horizontal"
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="15dp"
+        android:layout_gravity="center_horizontal">
+        <TextView
+            android:id="@+id/text_view_bpm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/accent_material_light"
+            android:textSize="70sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BPM"
+            android:textColor="@color/accent_material_light"
+            android:layout_marginRight="140dp"/>
+
+        <TextView
+            android:id="@+id/text_view_respi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="@color/accent_material_light"
+            android:textSize="70sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RPM"
+            android:textColor="@color/accent_material_light"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="190dp"
+        android:layout_marginStart="70dp">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/spo2" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:layout_marginStart="65dp"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/text_view_spo2"
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="@color/accent_material_light"
-            android:textSize="50px" />
+            android:textSize="70sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="% SpO2"
+            android:textColor="@color/accent_material_light"
+            android:layout_marginRight="120dp"/>
 
         <TextView
             android:id="@+id/text_view_temp"
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0"
             android:textColor="@color/accent_material_light"
-            android:textSize="50px" />
+            android:textSize="70sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="°C"
+            android:textColor="@color/accent_material_light"/>
 
     </LinearLayout>
 
@@ -62,6 +103,7 @@
     <android.support.v7.widget.AppCompatButton
         android:id="@+id/record_button"
         android:layout_width="220dp"
+        android:layout_marginTop="300px"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/mybutton_standard"

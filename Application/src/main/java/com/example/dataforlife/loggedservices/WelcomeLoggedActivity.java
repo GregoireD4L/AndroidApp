@@ -289,7 +289,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-                        if(menuItem.getTitle().toString().equals("ECG")){
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("ECG")){
                             menuItem.setChecked(true);
                             // close drawer when item is tapped
                             mDrawerLayout.closeDrawers();
@@ -349,7 +349,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                             transaction.commit();
                         }
 
-                        if(menuItem.getTitle().toString().equalsIgnoreCase("INDICATOR")){
+                        if(menuItem.getTitle().toString().equalsIgnoreCase("INDICATORS")){
                             menuItem.setChecked(true);
                             // close drawer when item is tapped
                             mDrawerLayout.closeDrawers();
