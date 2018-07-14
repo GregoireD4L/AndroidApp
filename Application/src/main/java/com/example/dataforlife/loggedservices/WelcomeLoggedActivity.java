@@ -162,6 +162,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private DoubleQueue ecgD1Transformed;
     private DoubleQueue rPeaks;
     private ContinuousWaveletTranform cwt;
+    private int mCompteurEcg;
+
     private double rPeakThreshold;
 
    // calcul respi indicateur 
@@ -170,6 +172,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private DoubleQueue respExtremeVal;
     private DoubleQueue respExtremeType;
     private int respRate;
+    private int mCompteuRespi;
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -424,7 +427,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 // Detection de pic de la transformée
                 if((ecgD1Transformed.previousIsMax())&(ecgD1Transformed.getElement(1) > rPeakThreshold)&(ecgD1Transformed.getElement(1) < 0.2)){
                     rPeakThreshold = ecgD1Transformed.getElement(1);
-                    rPeaks.add((mCompteur + j)*2 - 50);
+                    rPeaks.add((mCompteurEcg + j)*2 - 50);
                     heartRate = rPeaks.getBPM();
                     if(rPeaks.getFirstElement() == 0) {
                         if((heartRate > 50)&(heartRate < 150)) {
@@ -434,7 +437,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 }
                 rPeakThreshold /=1.0005;
             }
-            mCompteur+=10;
+            mCompteurEcg+=10;
         }
     }
 
@@ -470,10 +473,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         if (data != null){
 
             ArrayList<Double> dataList = mDataRespiration.displayData(data,mChannelSelected);
-            mCompteur += 1;
 
             Double dataDecodedT = dataList.get(0);
-            Double dataDecodedA = dataList.get(1);
 
             resp1Queue.add(dataDecodedT);
             // On vient de trouver un max
@@ -483,19 +484,19 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 if (respExtremeType.getElement(lastIndex) == 1) {
                     if (dataDecodedT > respExtremeVal.getElement(lastIndex)) {
                         respExtremeVal.replaceLast(dataDecodedT);
-                        respExtreme.replaceLast(mCompteur - 1);
+                        respExtreme.replaceLast(mCompteuRespi - 1);
                         Log.e(TAG, "last max replaced");
                     }
                     //Si le dernier point était un min et que ce max est >5 fois plus grand : c'est un vrai pic de respiration
                 } else { // A priori ça n'arrivera jamais
                     if ((dataDecodedT - respExtremeVal.getElement(lastIndex)) > 5) {
-                        respExtreme.add(mCompteur - 1);
+                        respExtreme.add(mCompteuRespi - 1);
                         respExtremeVal.add(dataDecodedT);
                         respExtremeType.add(1);
                         Log.e(TAG, "new max detected");
                     }
                 }
-                if (mCompteur > 1000) {
+                if (mCompteuRespi > 1000) {
                     mRespiTextView.setText(Integer.toString(respExtreme.getRespFreq()));
                 }
             }
@@ -506,20 +507,20 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 if(respExtremeType.getElement(lastIndex) == 0){
                     if(dataDecodedT < respExtremeVal.getElement(lastIndex)){
                         respExtremeVal.replaceLast(dataDecodedT);
-                        respExtreme.replaceLast(mCompteur - 1);
+                        respExtreme.replaceLast(mCompteuRespi - 1);
                         Log.e(TAG,"last min replaced");
                     }
                     //On avait un max et ce min est >5 fois plus petit : c'est un vrai pic de respiration
                 } else {
                     if((dataDecodedT - respExtremeVal.getElement(lastIndex)) < -5){
-                        respExtreme.add(mCompteur - 1);
+                        respExtreme.add(mCompteuRespi - 1);
                         respExtremeVal.add(dataDecodedT);
                         respExtremeType.add(0);
                         Log.e(TAG,"new min detected");
                     }
                 }
             }
-            mCompteur += 1;
+            mCompteuRespi += 1;
         }
     }
 
@@ -587,6 +588,8 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 spo2Data.clear();
             }
             mCompteur = 0;
+            mCompteuRespi = 0;
+            mCompteurEcg = 0;
         }
     }
 
