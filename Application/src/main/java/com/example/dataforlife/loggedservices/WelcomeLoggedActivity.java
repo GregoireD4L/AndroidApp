@@ -276,6 +276,13 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
+        //start fragment indicators
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.replace(R.id.content_frame,new IndicateurFragment());
+        transaction.addToBackStack(null);
+        transaction.commit();
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
