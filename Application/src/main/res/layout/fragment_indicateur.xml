@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="70dp"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="95dp">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -25,8 +25,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="60dp"
-        android:layout_marginStart="15dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginStart="10dp"
         android:layout_gravity="center_horizontal">
         <TextView
             android:id="@+id/text_view_bpm"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:text="BPM"
             android:textColor="@color/accent_material_light"
-            android:layout_marginRight="140dp"/>
+            android:layout_marginRight="100dp"/>
 
         <TextView
             android:id="@+id/text_view_respi"
@@ -60,7 +60,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="190dp"
+        android:layout_marginTop="245dp"
         android:layout_marginStart="70dp">
         <ImageView
             android:layout_width="wrap_content"
@@ -76,8 +76,8 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
-        android:layout_marginStart="65dp"
+        android:layout_marginTop="250dp"
+        android:layout_marginStart="80dp"
         android:orientation="horizontal">
 
         <TextView
@@ -92,7 +92,7 @@
             android:layout_height="wrap_content"
             android:text="% SpO2"
             android:textColor="@color/accent_material_light"
-            android:layout_marginRight="120dp"/>
+            android:layout_marginRight="90dp"/>
 
         <TextView
             android:id="@+id/text_view_temp"
@@ -113,7 +113,7 @@
     <android.support.v7.widget.AppCompatButton
         android:id="@+id/record_button"
         android:layout_width="220dp"
-        android:layout_marginTop="300px"
+        android:layout_marginTop="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="@drawable/mybutton_standard"
