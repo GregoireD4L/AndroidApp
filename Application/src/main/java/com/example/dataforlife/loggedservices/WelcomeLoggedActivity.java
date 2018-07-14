@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Author Yousria
+ * Author Yousria and vartan kokoghlanian
  */
 
 public class WelcomeLoggedActivity extends AppCompatActivity {
@@ -83,7 +83,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private boolean isIndicateurFragment = false;
 
     //Firebase Auth
-    FirebaseAuth auth;
+    private FirebaseAuth auth;
 
     // Lancement de l'enregistrement
     private boolean isRecording;
@@ -251,6 +251,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.welcome_logged);
+        isRecording = false;
 
         //creation du producer.
         mMessageProducer = new MessageProducer("51.38.185.206",
@@ -552,7 +553,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         if (data != null){
 
             mCompteur += 1;
-            tempData.append(20*mCompteur, mDataTempArray.displayData(data,mChannelSelected).get(0) / 256);
+            tempData.append(20*mCompteur, (mDataTempArray.displayData(data,mChannelSelected).get(0) / 256)+1.7);
             surface.zoomExtents();
         }
     }
@@ -649,7 +650,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mServiceSelected = 1;
         mChannelSelected = 1;
         isFilteringOn = false;
-        isRecording = false;
         isDataSave = false;
         isIndicateurFragment = false;
 
@@ -728,7 +728,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mServiceSelected = 2;
         mChannelSelected = 1;
         isFilteringOn = false;
-        isRecording = false;
         isDataSave = false;
         isIndicateurFragment = false;
 
@@ -912,7 +911,6 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mServiceSelected = 5;
         mChannelSelected = 1;
         isFilteringOn = false;
-        isRecording = false;
         isDataSave = false;
         isIndicateurFragment = false;
 
