@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.dataforlife.*;
-import com.example.dataforlife.pairservice.PairActivity;
+import com.example.dataforlife.pairservice.ActivationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -26,7 +26,7 @@ public class SplashScreen extends AppCompatActivity {
         new Handler().postDelayed(() -> {
             //verify if user is authentified
             if (auth.getCurrentUser() != null) {
-                startActivity(new Intent(SplashScreen.this, PairActivity.class));
+                startActivity(new Intent(SplashScreen.this, ActivationView.class));
                 finish();
             }else {
                 Intent i = new Intent(SplashScreen.this, WelcomeActivity.class);

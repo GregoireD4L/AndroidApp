@@ -58,7 +58,6 @@
         <activity android:name=".loginservice.WelcomeActivity"/>
         <activity android:name=".loginservice.InstructionsActivity"/>
         <activity android:name=".loginservice.InstructionsPagerActivity"/>
-        <activity android:name=".pairservice.PairActivity"/>
         <activity android:name=".loggedservices.WelcomeLoggedActivity"/>
         <activity android:name=".pairservice.ActivationView"/>
         <activity android:name=".pairservice.PairedActivity"/>

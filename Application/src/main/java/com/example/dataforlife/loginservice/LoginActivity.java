@@ -2,10 +2,12 @@ package com.example.dataforlife.loginservice;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -15,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dataforlife.R;
-import com.example.dataforlife.pairservice.PairActivity;
+import com.example.dataforlife.pairservice.ActivationView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -39,12 +41,25 @@ public class LoginActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_screen);
 
+        DisplayMetrics metrics = new DisplayMetrics();
+        this.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        float yInches= metrics.heightPixels/metrics.ydpi;
+        float xInches= metrics.widthPixels/metrics.xdpi;
+        double diagonalInches = Math.sqrt(xInches*xInches + yInches*yInches);
+        if (diagonalInches>=6.5){
+            // 6.5inch device or bigger
+        }else{
+            // smaller device
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+
         //Get Firebase auth instance
         auth = FirebaseAuth.getInstance();
 
         //verify if user is authentified
         if (auth.getCurrentUser() != null) {
-            startActivity(new Intent(LoginActivity.this, PairActivity.class));
+            startActivity(new Intent(LoginActivity.this, ActivationView.class));
             finish();
         }
 
@@ -107,7 +122,7 @@ public class LoginActivity extends AppCompatActivity{
 
     private void updateUI(FirebaseUser user) {
         if(user != null){
-            Intent intent = new Intent(LoginActivity.this, PairActivity.class);
+            Intent intent = new Intent(LoginActivity.this, ActivationView.class);
             startActivity(intent);
         }else{
             Log.e("LOGIN ACTIVITY", "AUTH FAILED");
