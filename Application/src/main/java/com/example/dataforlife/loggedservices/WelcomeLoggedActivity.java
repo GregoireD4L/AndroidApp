@@ -132,6 +132,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
     private TextView mBpmIndocator;
     private TextView mRespiTextView;
+    private TextView mTempTextView;
 
     // Objets BlueTooth
     private BluetoothLeService mBTLeService;
@@ -175,6 +176,11 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
     private DoubleQueue respExtremeType;
     private int respRate;
     private int mCompteuRespi;
+
+    private DoubleQueue tempQueue;
+    private int mCompteurTemp;
+
+
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -231,7 +237,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
                 if(isIndicateurFragment){
                     calculEcgIndicator(intentData);
                     calculRespiIndicator(intentData);
-                    //displayRespiration(intentData);
+                    calcultTempIndicator(intentData);
                 }
                 else if (mServiceSelected == 1){
                     displayDataECG(intentData);
@@ -433,6 +439,23 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         mBTLeService = null;
     }
 
+
+    private void calcultTempIndicator(String data){
+        if(data!=null){
+            tempQueue.add((mDataTempArray.displayData(data,mChannelSelected).get(0) / 256)+1.7);
+            if(mCompteurTemp == tempQueue.getSize()){
+                double temperature = 0.0;
+                for(int i = 0; i < tempQueue.getSize(); i++) {
+                   temperature += tempQueue.getElement(i);
+                }
+                temperature = temperature/tempQueue.getSize();
+                mTempTextView.setText(Double.toString(round(temperature,1)));
+                mCompteurTemp = 0;
+            }
+            else
+                mCompteurTemp++;
+        }
+    }
 
     private void calculEcgIndicator(String data) {
 
@@ -962,6 +985,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
 
         mBpmIndocator = findViewById(R.id.text_view_bpm);
         mRespiTextView = findViewById(R.id.text_view_respi);
+        mTempTextView = findViewById(R.id.text_view_temp);
         mRecord = findViewById(R.id.record_button);
         mRecord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -995,7 +1019,7 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         }
     }
 
-    void initIndicateur(){
+    void initIndicateur() {
 
         cwt = new ContinuousWaveletTranform(5);
         ecgD1Queue = new DoubleQueue(51);
@@ -1008,5 +1032,16 @@ public class WelcomeLoggedActivity extends AppCompatActivity {
         respExtreme = new DoubleQueue(10);
         respExtremeVal = new DoubleQueue(10);
         respExtremeType = new DoubleQueue(10);
+
+        tempQueue = new DoubleQueue(200);
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 }
