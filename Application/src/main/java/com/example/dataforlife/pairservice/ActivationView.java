@@ -243,6 +243,9 @@ public class ActivationView extends AppCompatActivity {
             finish();
             return;
         }
+        else if(requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK){
+            scanLeDevice(true);
+        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
