@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/respi_icon"
-            android:layout_marginLeft="180dp"/>
+            android:layout_marginLeft="130dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -26,8 +26,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="100dp"
-        android:layout_marginStart="10dp"
-        android:layout_gravity="center_horizontal">
+        android:layout_marginStart="70dp">
         <TextView
             android:id="@+id/text_view_bpm"
             android:layout_width="wrap_content"
@@ -40,7 +39,7 @@
             android:layout_height="wrap_content"
             android:text="BPM"
             android:textColor="@color/accent_material_light"
-            android:layout_marginRight="100dp"/>
+            android:layout_marginRight="70dp"/>
 
         <TextView
             android:id="@+id/text_view_respi"
@@ -70,14 +69,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/temperature"
-            android:layout_marginLeft="175dp"/>
+            android:layout_marginLeft="130dp"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="250dp"
-        android:layout_marginStart="80dp"
+        android:layout_marginStart="70dp"
         android:orientation="horizontal">
 
         <TextView
@@ -92,7 +91,7 @@
             android:layout_height="wrap_content"
             android:text="% SpO2"
             android:textColor="@color/accent_material_light"
-            android:layout_marginRight="90dp"/>
+            android:layout_marginRight="60dp"/>
 
         <TextView
             android:id="@+id/text_view_temp"
